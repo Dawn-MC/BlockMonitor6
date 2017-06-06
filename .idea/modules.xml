@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/BlockMonitor.iml" filepath="$PROJECT_DIR$/BlockMonitor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/BlockMonitor_main.iml" filepath="$PROJECT_DIR$/.idea/modules/BlockMonitor_main.iml" group="BlockMonitor" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/BlockMonitor_test.iml" filepath="$PROJECT_DIR$/.idea/modules/BlockMonitor_test.iml" group="BlockMonitor" />
+    </modules>
+  </component>
+</project>
