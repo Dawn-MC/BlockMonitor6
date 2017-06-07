@@ -1,6 +1,8 @@
 package com.amict.blockmonitor.api;
 
 import com.amict.blockmonitor.BlockMonitor;
+import com.google.inject.Inject;
+import org.slf4j.Logger;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataQuery;
@@ -8,11 +10,16 @@ import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.data.persistence.DataFormat;
 import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.living.animal.Wolf;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.Event;
+import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
+import javax.swing.text.html.Option;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -28,60 +35,103 @@ import java.util.Optional;
 public class Record {
     DataContainer dataContainer;
     EventType eventType;
-    Location<World> worldLocation;
-    String worldName;
+    Location worldLocation;
 
-    Record(DataContainer dataContainer1, EventType eventType1, Location<World> loc, String string){
+    @Inject
+    private Logger logger;
+
+    Record(DataContainer dataContainer1, EventType eventType1, Location<World> loc){
         this.dataContainer = dataContainer1;
         this.eventType = eventType1;
-        this.worldLocation = loc;
-        this.worldName = string;
     }
 
     public Record(){
         this.dataContainer = DataContainer.createNew();
     }
 
-    public void setCause(Cause cause){
-        Optional<Player> playerOptional = cause.first(Player.class);
+    public void setCause(Event event){
+        Cause cause = event.getCause();
+        LocalDateTime localDateTime = LocalDateTime.now();
+
+/*        Optional<Player> playerOptional = cause.first(Player.class);
         if (playerOptional.isPresent()){
             Player player = playerOptional.get();
-
-            this.worldName = player.getWorld().getName();
-            this.worldLocation = player.getLocation();
             this.dataContainer.set(DataQuery.of("type"), "player");
             this.dataContainer.set(DataQuery.of("player", "uuid"), player.getUniqueId());
             this.dataContainer.set(DataQuery.of("player", "username"), player.getName());
             this.dataContainer.set(DataQuery.of("player", "ipaddress"), player.getConnection().getAddress().toString());
+            this.dataContainer.set(DataQuery.of("plauer", "location"), player.getLocation().createSnapshot().toContainer());
         }
 
         Optional<Entity> entityOptional = cause.first(Entity.class);
         if (entityOptional.isPresent()){
             Entity entity = entityOptional.get();
 
-            this.worldName = entity.getWorld().getName();
-            this.worldLocation = entity.getLocation();
             this.dataContainer.set(DataQuery.of("type"), "entity");
             this.dataContainer.set(DataQuery.of("entity", "uuid"), entity.getUniqueId());
             this.dataContainer.set(DataQuery.of("entity", "type"), entity.getType());
             if (entity.getCreator().isPresent())
             this.dataContainer.set(DataQuery.of("entity", "creator"), entity.getCreator().get());
+        }*/
+
+        if (event instanceof ClientConnectionEvent.Join){
+            //we know its a client connect join event
+            ClientConnectionEvent.Join clientConnectionEventJoin = (ClientConnectionEvent.Join) event;
+            this.eventType = EventType.ConnectionEvent;
+            Optional<Location> locationOptional = getLocationFromCause(cause);
+            if (locationOptional.isPresent()){
+                worldLocation = locationOptional.get();
+            }
+            writePlayerData(clientConnectionEventJoin.getTargetEntity());
+        }
+
+        if (event instanceof ClientConnectionEvent.Disconnect){
+            //we know its a client connect disconnect event
+            ClientConnectionEvent.Disconnect clientConnectionEventDisconnect = (ClientConnectionEvent.Disconnect) event;
+
+        }
+
+        if (event instanceof ChangeBlockEvent.Break){
+            ChangeBlockEvent.Break changeBlockEventBreak = (ChangeBlockEvent.Break) event;
+        }
+
+        if (event instanceof ChangeBlockEvent.Place){
+            ChangeBlockEvent.Place changeBlockEventPlace = (ChangeBlockEvent.Place) event;
         }
     }
 
-    public void joinEvent(LocalDateTime dateTime){
-        eventType = EventType.ConnectionEvent;
-        this.dataContainer.set(DataQuery.of("time"),dateTime);
+    //helper methods
+
+    /**
+     * takes a blocksnapshot and writes it to the @DataContainer
+     * @param blockSnapshot the block snapshot to write
+     */
+    public void writeBlockData(BlockSnapshot blockSnapshot){
+        //if location data exists
+        if (blockSnapshot.getLocation().isPresent()){
+            Location<World> worldLocation = blockSnapshot.getLocation().get();
+            this.dataContainer.set(DataQuery.of("block", "location"), worldLocation.toString());
+        }
+        this.dataContainer.set(DataQuery.of("block", "blockcontainer"), blockSnapshot.toContainer());
     }
 
-    public void leaveEvent(LocalDateTime dateTime){
-        eventType = EventType.DisconnectionEvent;
-        this.dataContainer.set(DataQuery.of("time"), dateTime);
+    public Optional<Location> getLocationFromCause(Cause cause){
+        Optional<Location> locationOptional = cause.first(Location.class);
+        if (locationOptional.isPresent()){
+            Location location = locationOptional.get();
+            return Optional.of(location);
+        }else {
+            logger.info("world location could not be found");
+        }
+        return Optional.empty();
     }
 
-    public void blockRemovedEvent(Transaction<BlockSnapshot> blockSnapshotTransaction){
-        eventType = EventType.blockRemoved;
-        this.dataContainer.set(DataQuery.of("block", "blocksnapshot"), blockSnapshotTransaction.getFinal());
+    public void writePlayerData(Player player){
+        this.dataContainer.set(DataQuery.of("player", "uuid"), player.getUniqueId());
+        this.dataContainer.set(DataQuery.of("player", "username"), player.getName());
+        this.dataContainer.set(DataQuery.of("player", "location"), player.getLocation().createSnapshot().toContainer());
+        this.dataContainer.set(DataQuery.of("player", "ipaddress"), player.getConnection().getAddress());
+
     }
 
     //public DataContainer writeBlockSnapshot
@@ -100,13 +150,14 @@ public class Record {
             prepareStatement.setInt(1, this.worldLocation.getBlockX());
             prepareStatement.setInt(2, this.worldLocation.getBlockY());
             prepareStatement.setInt(3, this.worldLocation.getBlockZ());
-            prepareStatement.setString(4, worldName);
+            World world = (World) this.worldLocation.getExtent();
+            if (world != null)
+            prepareStatement.setString(4, world.getName());
+
             prepareStatement.setString(5, eventType.toString());
             prepareStatement.setString(6, dataContainerAsJson);
-            System.out.println("did excecute correctly: " + prepareStatement.execute());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+            //System.out.println("did excecute correctly: " + prepareStatement.execute());
+        } catch (SQLException | IOException e) {
             e.printStackTrace();
         }
     }
