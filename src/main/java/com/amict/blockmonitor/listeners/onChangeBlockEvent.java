@@ -13,11 +13,11 @@ public class onChangeBlockEvent implements EventListener<ChangeBlockEvent> {
     @Override
     public void handle(ChangeBlockEvent event) throws Exception {
 
-        if (event instanceof ChangeBlockEvent.Break){
+/*        if (event instanceof ChangeBlockEvent.Break){
             for (Transaction<BlockSnapshot> blockSnapshotTransaction:event.getTransactions()) {
                 Record record = new Record();
                 record.setCause(event.getCause());
-                record.blockRemovedEvent(blockSnapshotTransaction);
+                record.blockRemovedEvent(blockSnapshotTransaction, event.getCause());
             }
 
         }else if (event instanceof ChangeBlockEvent.Place){
@@ -28,6 +28,6 @@ public class onChangeBlockEvent implements EventListener<ChangeBlockEvent> {
 
         }else if (event instanceof ChangeBlockEvent.Modify){
 
-        }
+        }*/
     }
 }

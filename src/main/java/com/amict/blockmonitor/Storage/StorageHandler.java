@@ -24,16 +24,17 @@ public class StorageHandler {
         dataSource = new HikariDataSource(config);
 
         try {
-            dataSource.getConnection().createStatement().execute(
+            System.out.println("create table : " + dataSource.getConnection().createStatement().execute(
                     "CREATE TABLE IF NOT EXISTS `blockmonitor` (" +
-                    "`id` BIGINT AUTO_INCREMENT," +
-                    "`locationX` INT," +
-                    "`locationY` INT," +
-                    "`locationZ` INT," +
-                    "`worldName` VARCHAR(500)," +
-                    "`eventtype` VARCHAR(255) NOT NULL," +
-                    "`datacontiner` VARCHAR(10000) NOT NULL" +
-                    ")");
+                            "`id` BIGINT AUTO_INCREMENT NOT NULL," +
+                            "`locationX` DOUBLE," +
+                            "`locationY` DOUBLE," +
+                            "`locationZ` DOUBLE," +
+                            "`worldName` VARCHAR(500)," +
+                            "`eventtype` VARCHAR(255)," +
+                            "`datacontiner` VARCHAR(10000)" +
+                            ");")
+            );
         } catch (SQLException e) {
             e.printStackTrace();
         }
