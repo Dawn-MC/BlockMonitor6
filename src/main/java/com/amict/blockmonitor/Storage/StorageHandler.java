@@ -27,12 +27,13 @@ public class StorageHandler {
             System.out.println("create table : " + dataSource.getConnection().createStatement().execute(
                     "CREATE TABLE IF NOT EXISTS `blockmonitor` (" +
                             "`id` BIGINT AUTO_INCREMENT NOT NULL," +
-                            "`locationX` DOUBLE," +
-                            "`locationY` DOUBLE," +
-                            "`locationZ` DOUBLE," +
+                            "`locationX` INT," +
+                            "`locationY` INT," +
+                            "`locationZ` INT," +
                             "`worldName` VARCHAR(500)," +
                             "`eventtype` VARCHAR(255)," +
-                            "`datacontiner` VARCHAR(10000)" +
+                            "`datacontiner` VARCHAR(10000)," +
+                            "`timestamp` TIMESTAMP" +
                             ");")
             );
         } catch (SQLException e) {

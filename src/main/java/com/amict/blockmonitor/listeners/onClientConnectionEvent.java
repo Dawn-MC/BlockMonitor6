@@ -14,13 +14,15 @@ import java.util.Optional;
  * Created by johnfg10 on 04/06/2017.
  */
 public class onClientConnectionEvent {
-
     @Listener(order = Order.LAST)
     public void clientConnectionEvent(ClientConnectionEvent event){
         if (event instanceof ClientConnectionEvent.Join) {
             Record record = new Record();
-            record.setCause(event);
+            record.setEvent(event);
         }
-        //record.submitToDatabase();
+        if (event instanceof ClientConnectionEvent.Disconnect){
+            Record record = new Record();
+            record.setEvent(event);
+        }
     }
 }
