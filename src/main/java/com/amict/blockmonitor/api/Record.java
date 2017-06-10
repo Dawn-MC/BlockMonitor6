@@ -73,17 +73,16 @@ public class Record {
             List<Transaction<BlockSnapshot>> blockSnapshotTransaction = changeBlockEventBreak.getTransactions();
             for (Transaction<BlockSnapshot> transaction : blockSnapshotTransaction) {
 
-                if (!transaction.getFinal().getState().getType().getName().equalsIgnoreCase("minecraft:air")){
+                if (!transaction.getOriginal().getState().getType().getName().equalsIgnoreCase("minecraft:air")){
+                    System.out.println("found a block");
                     this.eventType = EventType.BlockBreak;
-                    Optional<Location<World>> worldLocation = transaction.getFinal().getLocation();
-                    if (worldLocation.isPresent())
-                        this.location = worldLocation.get();
-
                     Optional<Player> playerOptional = event.getCause().first(Player.class);
                     if (playerOptional.isPresent()){
                         Player player = playerOptional.get();
                         setEntity(player, false);
                     }
+
+                    writeBlockTransaction(transaction);
 
                     this.submitToDatabase();
                 }
@@ -110,19 +109,21 @@ public class Record {
         }
     }
 
-    //helper methods
+    public void writeBlockTransaction(Transaction<BlockSnapshot> blockSnapshotTransaction){
+        if (!blockSnapshotTransaction.getOriginal().getState().getType().getName().equalsIgnoreCase("minecraft:air")) {
 
-    /**
-     * takes a blocksnapshot and writes it to the @DataContainer
-     * @param blockSnapshot the block snapshot to write
-     */
-    public void writeBlockData(BlockSnapshot blockSnapshot){
-        //if location data exists
-        if (blockSnapshot.getLocation().isPresent()){
-            Location<World> worldLocation = blockSnapshot.getLocation().get();
-            this.dataContainer.set(DataQuery.of("block", "location"), worldLocation.toString());
+            Optional<Location<World>> worldLocation = blockSnapshotTransaction.getFinal().getLocation();
+            if (worldLocation.isPresent())
+                this.location = worldLocation.get();
+
+            this.dataContainer.set(DataQuery.of("block", "blockcontainer"), blockSnapshotTransaction.getOriginal().getState().toContainer());
         }
-        this.dataContainer.set(DataQuery.of("block", "blockcontainer"), blockSnapshot.toContainer());
+
+    }
+
+    public void clearBlockTransactionData(){
+        this.location = null;
+        this.dataContainer.remove(DataQuery.of("block", "blockcontainer"));
     }
 
     public Optional<Location> getLocationFromCause(Cause cause){
