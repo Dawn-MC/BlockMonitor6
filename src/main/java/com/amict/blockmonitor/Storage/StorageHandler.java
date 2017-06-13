@@ -19,7 +19,7 @@ public class StorageHandler {
     //h2
     public StorageHandler(Path folderLocation){
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:h2://" + folderLocation + "/blockmonitor");
+        config.setJdbcUrl("jdbc:h2://" + folderLocation + "/blockmonitor;AUTO_SERVER=TRUE");
         config.setDriverClassName("org.h2.Driver");
         dataSource = new HikariDataSource(config);
 

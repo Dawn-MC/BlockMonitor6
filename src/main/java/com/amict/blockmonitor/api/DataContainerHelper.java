@@ -12,8 +12,10 @@ import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
 
 /**
@@ -21,7 +23,7 @@ import java.util.Optional;
  */
 public class DataContainerHelper {
 
-    public static Optional<ItemStackSnapshot> getItemStackSnapshotFromDataContainer(DataContainer dataContainer){
+    public static Optional<ItemStackSnapshot> getItemStackSnapshotFromDataContainer(DataView dataContainer){
         final Optional<DataBuilder<ItemStackSnapshot>> dataBuilderOptional = Sponge.getDataManager().getBuilder(ItemStackSnapshot.class);
         if (dataBuilderOptional.isPresent()){
             DataBuilder<ItemStackSnapshot> itemStackSnapshotDataBuilder = dataBuilderOptional.get();
@@ -33,7 +35,7 @@ public class DataContainerHelper {
         return Optional.empty();
     }
 
-    public static Optional<BlockSnapshot> getBlockSnapshotFromDataContainer(DataContainer dataContainer){
+    public static Optional<BlockSnapshot> getBlockSnapshotFromDataContainer(DataView dataContainer){
         final Optional<DataBuilder<BlockSnapshot>> dataBuilderOptional = Sponge.getDataManager().getBuilder(BlockSnapshot.class);
         if (dataBuilderOptional.isPresent()){
             DataBuilder<BlockSnapshot> blockSnapshotDataBuilder = dataBuilderOptional.get();
@@ -46,7 +48,7 @@ public class DataContainerHelper {
         return Optional.empty();
     }
 
-    public static Optional<User> getUserFromDataContainer(DataContainer dataContainer){
+    public static Optional<User> getUserFromDataContainer(DataView dataContainer){
         final Optional<DataBuilder<User>> dataBuilderOptional = Sponge.getDataManager().getBuilder(User.class);
         if (dataBuilderOptional.isPresent()){
             DataBuilder<User> userDataBuilder = dataBuilderOptional.get();
@@ -58,7 +60,7 @@ public class DataContainerHelper {
         return Optional.empty();
     }
 
-    public static Optional<Entity> getEntityFromDataContainer(DataContainer dataContainer){
+    public static Optional<Entity> getEntityFromDataContainer(DataView dataContainer){
         final Optional<DataBuilder<Entity>> dataBuilderOptional = Sponge.getDataManager().getBuilder(Entity.class);
         if (dataBuilderOptional.isPresent()){
             DataBuilder<Entity> entityDataBuilder = dataBuilderOptional.get();
@@ -70,16 +72,15 @@ public class DataContainerHelper {
         return Optional.empty();
     }
 
-    public ByteArrayOutputStream toJsonFormat(ItemStackSnapshot itemStack){
-        DataContainer playerDataContainer = itemStack.toContainer();
-        DataFormat dataFormat = DataFormats.JSON;
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    public static Optional<DataContainer> getDataContainerFromString(String dataContainerString) {
         try {
-            dataFormat.writeTo(outputStream, playerDataContainer);
+            InputStream inputStream = new ByteArrayInputStream(dataContainerString.getBytes());
+            DataFormat dataFormat = DataFormats.JSON;
+            DataContainer dataContainer = dataFormat.readFrom(inputStream);
+            return Optional.of(dataContainer);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        return outputStream;
+        return Optional.empty();
     }
 }

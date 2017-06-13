@@ -178,8 +178,6 @@ public class Record {
                 e.printStackTrace();
             }
             String output = new String(outputStream.toByteArray(), Charset.defaultCharset());
-            //System.out.println(output);
-
             Connection connection = BlockMonitor.storageHandler.dataSource.getConnection();
 
             PreparedStatement prepareStatement = connection.prepareStatement(prepareStatementString);
@@ -198,8 +196,7 @@ public class Record {
             prepareStatement.setString(5, eventType.name());
             prepareStatement.setString(6, output);
             prepareStatement.setTimestamp(7, Timestamp.valueOf(localDateTime));
-            System.out.println("Record submit to db : " + prepareStatement.execute());
-
+            prepareStatement.execute();
             //cleanup
             prepareStatement.close();
             connection.close();

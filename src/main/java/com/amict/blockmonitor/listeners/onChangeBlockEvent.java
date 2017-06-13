@@ -1,6 +1,7 @@
 package com.amict.blockmonitor.listeners;
 
 import com.amict.blockmonitor.api.Record;
+import com.amict.blockmonitor.api.RecordBuilder;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.event.EventListener;
@@ -13,11 +14,9 @@ import org.spongepowered.api.event.block.ChangeBlockEvent;
 public class onChangeBlockEvent{
     @Listener
     public void onChangeBlockEvent(ChangeBlockEvent event){
-        if (event instanceof ChangeBlockEvent.Break) {
-            Record record = new Record();
-            record.setEvent(event);
-        }else if (event instanceof ChangeBlockEvent.Place){
+        RecordBuilder recordBuilder = new RecordBuilder(event);
+        recordBuilder.start();
 
-        }
+
     }
 }

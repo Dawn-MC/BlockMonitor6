@@ -18,10 +18,17 @@ import java.util.Optional;
 /**
  * Created by johnfg10 on 13/06/2017.
  */
-public class RecordBuilder {
-    RecordBuilder(Event event){
+public class RecordBuilder extends Thread {
+    protected final Event event;
+
+    public RecordBuilder(Event event) {
+        this.event = event;
+    }
+
+    @Override
+    public void run() {
         LocalDateTime localDateTime = LocalDateTime.now();
-        if (event instanceof ClientConnectionEvent.Join){
+        if (event instanceof ClientConnectionEvent.Join) {
             ClientConnectionEvent.Join connectionEvent = (ClientConnectionEvent.Join) event;
             Record record = new Record();
             record.setEventType(EventType.ConnectionEvent);
@@ -29,7 +36,7 @@ public class RecordBuilder {
             record.writeUser(connectionEvent.getTargetEntity());
             record.setLocation(connectionEvent.getTargetEntity().getLocation());
             record.submitToDatabase();
-        }else if (event instanceof ClientConnectionEvent.Disconnect){
+        } else if (event instanceof ClientConnectionEvent.Disconnect) {
             ClientConnectionEvent.Disconnect disconnectEvent = (ClientConnectionEvent.Disconnect) event;
             Record record = new Record();
             record.setEventType(EventType.DisconnectionEvent);
@@ -37,10 +44,13 @@ public class RecordBuilder {
             record.writeUser(disconnectEvent.getTargetEntity());
             record.setLocation(disconnectEvent.getTargetEntity().getLocation());
             record.submitToDatabase();
-        }else if (event instanceof ChangeBlockEvent.Break){
+        } else if (event instanceof ChangeBlockEvent.Break) {
             ChangeBlockEvent.Break breakEvent = (ChangeBlockEvent.Break) event;
+            if (!isPlayerOrEntity(breakEvent.getCause()))
+                return;
+
             List<Transaction<BlockSnapshot>> transactionList = breakEvent.getTransactions();
-            for (Transaction<BlockSnapshot> blockSnapshotTransaction:transactionList) {
+            for (Transaction<BlockSnapshot> blockSnapshotTransaction : transactionList) {
                 Record record = new Record();
                 record.setEventType(EventType.BlockBreak);
                 record.setLocalDateTime(localDateTime);
@@ -51,12 +61,15 @@ public class RecordBuilder {
                 record.writeBlockSnapshotTransaction(blockSnapshotTransaction);
                 record.submitToDatabase();
             }
-        }else if (event instanceof ChangeBlockEvent.Place){
+        } else if (event instanceof ChangeBlockEvent.Place) {
             ChangeBlockEvent.Place placeEvent = (ChangeBlockEvent.Place) event;
+            if (!isPlayerOrEntity(placeEvent.getCause()))
+                return;
+
             List<Transaction<BlockSnapshot>> transactionList = placeEvent.getTransactions();
-            for (Transaction<BlockSnapshot> blockSnapshotTransaction:transactionList) {
+            for (Transaction<BlockSnapshot> blockSnapshotTransaction : transactionList) {
                 Record record = new Record();
-                record.setEventType(EventType.BlockBreak);
+                record.setEventType(EventType.BlockPlace);
                 record.setLocalDateTime(localDateTime);
                 dealWithEntityType(placeEvent.getCause(), record);
                 Optional<Location<World>> worldLocation = blockSnapshotTransaction.getOriginal().getLocation();
@@ -66,18 +79,24 @@ public class RecordBuilder {
                 record.submitToDatabase();
             }
         }
+
     }
 
-    private void dealWithEntityType(Cause cause, Record record){
+
+    private void dealWithEntityType(Cause cause, Record record) {
         Optional<Player> playerOptional = cause.first(Player.class);
         Optional<Entity> entityOptional = cause.first(Entity.class);
 
-        if (playerOptional.isPresent()){
+        if (playerOptional.isPresent()) {
             record.writeUser(playerOptional.get());
             return;
-        }else if (entityOptional.isPresent()){
+        } else if (entityOptional.isPresent()) {
             record.writeEntity(entityOptional.get());
             return;
         }
+    }
+
+    private boolean isPlayerOrEntity(Cause cause) {
+        return cause.containsType(Player.class) || cause.containsType(Entity.class);
     }
 }

@@ -2,6 +2,7 @@ package com.amict.blockmonitor;
 
 
 import com.amict.blockmonitor.Storage.StorageHandler;
+import com.amict.blockmonitor.commands.onRestoreNear;
 import com.amict.blockmonitor.commands.onSearchNear;
 import com.amict.blockmonitor.listeners.onChangeBlockEvent;
 import com.amict.blockmonitor.listeners.onClientConnectionEvent;
@@ -27,7 +28,9 @@ import java.util.logging.Logger;
 
 @Plugin(
         id = "blockmonitor",
-        name = "BlockMonitor"
+        name = "BlockMonitor",
+        version = "0.1.0",
+        description = "A plugin that monitors what players do ingame and logs it!"
 )
 public class BlockMonitor {
 
@@ -62,6 +65,13 @@ public class BlockMonitor {
                 .executor(new onSearchNear())
                 .build();
         Sponge.getCommandManager().register(this, onSearchNear, "searchnear", "searchn", "sn");
+
+        CommandSpec onRestoreNear = CommandSpec.builder()
+                .description(Text.of(""))
+                .permission("blockmonitor.restore.near")
+                .executor(new onRestoreNear())
+                .build();
+        Sponge.getCommandManager().register(this, onRestoreNear, "restorenear", "restoren", "rn");
         //Listeners
         Sponge.getEventManager().registerListeners(this, new onClientConnectionEvent());
         Sponge.getEventManager().registerListeners(this, new onChangeBlockEvent());

@@ -87,8 +87,45 @@ public class SearchHelper {
         return contents;
     }
 
+    public static List<Text> searchWorld(Location<World> worldLocation, int searchDiameter, Locale locale) throws SQLException {
+
+        String sql = "SELECT * FROM `blockmonitor` WHERE (`worldName` = ?);";
+        Connection connection = BlockMonitor.storageHandler.dataSource.getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, worldLocation.getExtent().getName());
+
+        ResultSet resultSet = preparedStatement.executeQuery();
+        List<org.spongepowered.api.text.Text> contents = new ArrayList<>();
+
+        while (resultSet.next()) {
+            String info = resultSet.getString("datacontainer");
+            try {
+                InputStream inputStream = new ByteArrayInputStream(info.getBytes());
+                DataFormat dataFormat = DataFormats.JSON;
+                DataContainer dataContainer = dataFormat.readFrom(inputStream);
+                Text text = formattedText(
+                        resultSet.getInt("id"),
+                        resultSet.getInt("locationX"),
+                        resultSet.getInt("locationY"),
+                        resultSet.getInt("locationZ"),
+                        resultSet.getString("worldName"),
+                        resultSet.getString("eventtype"),
+                        dataContainer,
+                        resultSet.getTimestamp("timestamp").toLocalDateTime(),
+                        locale
+                );
+                contents.add(text);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        preparedStatement.close();
+        connection.close();
+        return contents;
+    }
+
     public static Text formattedText(int id, int locationx, int locationy, int locationz, String worldname, String eventTypeString, DataContainer dataContainer, LocalDateTime eventDateTime, Locale locale){
-        EventType eventType = EventType.valueOf(eventTypeString);
         TextTemplate textTemplate = of(
                 "ID:",
                 arg("ID"),
