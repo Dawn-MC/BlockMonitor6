@@ -18,15 +18,12 @@ import java.util.Optional;
 /**
  * Created by johnfg10 on 13/06/2017.
  */
-public class RecordBuilder extends Thread {
+public class RecordBuilder {
     protected final Event event;
 
     public RecordBuilder(Event event) {
         this.event = event;
-    }
 
-    @Override
-    public void run() {
         LocalDateTime localDateTime = LocalDateTime.now();
         if (event instanceof ClientConnectionEvent.Join) {
             ClientConnectionEvent.Join connectionEvent = (ClientConnectionEvent.Join) event;
@@ -79,9 +76,7 @@ public class RecordBuilder extends Thread {
                 record.submitToDatabase();
             }
         }
-
     }
-
 
     private void dealWithEntityType(Cause cause, Record record) {
         Optional<Player> playerOptional = cause.first(Player.class);

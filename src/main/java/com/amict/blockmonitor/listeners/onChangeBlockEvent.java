@@ -15,7 +15,6 @@ public class onChangeBlockEvent{
     @Listener
     public void onChangeBlockEvent(ChangeBlockEvent event){
         RecordBuilder recordBuilder = new RecordBuilder(event);
-        recordBuilder.start();
 
 
     }

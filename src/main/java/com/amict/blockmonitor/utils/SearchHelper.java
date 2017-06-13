@@ -1,24 +1,16 @@
 package com.amict.blockmonitor.utils;
 
 import com.amict.blockmonitor.BlockMonitor;
-import com.amict.blockmonitor.api.DataContainerHelper;
 import com.amict.blockmonitor.api.EventType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
-import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataQuery;
-import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.DataManipulator;
-import org.spongepowered.api.data.persistence.DataBuilder;
 import org.spongepowered.api.data.persistence.DataFormat;
 import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.entity.Entity;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
-import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.TextElement;
 import org.spongepowered.api.text.TextTemplate;
@@ -26,12 +18,9 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import javax.swing.text.html.Option;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -40,7 +29,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static org.spongepowered.api.text.TextTemplate.*;
+import static org.spongepowered.api.text.TextTemplate.arg;
+import static org.spongepowered.api.text.TextTemplate.of;
 
 /**
  * Created by johnfg10 on 08/06/2017.

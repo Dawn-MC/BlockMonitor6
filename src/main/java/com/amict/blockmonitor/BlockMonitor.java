@@ -60,17 +60,18 @@ public class BlockMonitor {
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
         CommandSpec onSearchNear = CommandSpec.builder()
-                .description(Text.of(""))
+                .description(Text.of("Searches in a 10 block area!"))
                 .permission("blockmonitor.search.near")
                 .executor(new onSearchNear())
                 .build();
         Sponge.getCommandManager().register(this, onSearchNear, "searchnear", "searchn", "sn");
 
         CommandSpec onRestoreNear = CommandSpec.builder()
-                .description(Text.of(""))
+                .description(Text.of("replaces blocks in a 10 block area!"))
                 .permission("blockmonitor.restore.near")
                 .executor(new onRestoreNear())
                 .build();
+
         Sponge.getCommandManager().register(this, onRestoreNear, "restorenear", "restoren", "rn");
         //Listeners
         Sponge.getEventManager().registerListeners(this, new onClientConnectionEvent());

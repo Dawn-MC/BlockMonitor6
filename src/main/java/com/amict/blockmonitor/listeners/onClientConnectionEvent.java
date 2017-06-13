@@ -18,6 +18,5 @@ public class onClientConnectionEvent {
     @Listener(order = Order.LAST)
     public void clientConnectionEvent(ClientConnectionEvent event){
         RecordBuilder recordBuilder = new RecordBuilder(event);
-        recordBuilder.start();
     }
 }
