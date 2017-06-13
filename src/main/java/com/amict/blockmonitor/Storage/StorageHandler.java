@@ -32,7 +32,7 @@ public class StorageHandler {
                             "`locationZ` INT," +
                             "`worldName` VARCHAR(500)," +
                             "`eventtype` VARCHAR(255)," +
-                            "`datacontiner` VARCHAR(10000)," +
+                            "`datacontainer` VARCHAR(10000)," +
                             "`timestamp` TIMESTAMP" +
                             ");")
             );

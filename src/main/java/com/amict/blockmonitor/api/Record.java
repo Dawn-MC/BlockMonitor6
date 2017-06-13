@@ -12,10 +12,12 @@ import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.explosion.Explosion;
@@ -23,6 +25,7 @@ import org.spongepowered.api.world.explosion.Explosion;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -43,12 +46,14 @@ public class Record {
     @Inject
     private Logger logger;
 
+
     public Record(){
         this.dataContainer = DataContainer.createNew();
         this.eventType = EventType.Unknown;
         this.localDateTime = LocalDateTime.now();
     }
 
+    @Deprecated
     public void setEvent(Event event){
         Cause cause = event.getCause();
 
@@ -72,19 +77,19 @@ public class Record {
             ChangeBlockEvent.Break changeBlockEventBreak = (ChangeBlockEvent.Break) event;
             List<Transaction<BlockSnapshot>> blockSnapshotTransaction = changeBlockEventBreak.getTransactions();
             for (Transaction<BlockSnapshot> transaction : blockSnapshotTransaction) {
-
                 if (!transaction.getOriginal().getState().getType().getName().equalsIgnoreCase("minecraft:air")){
-                    System.out.println("found a block");
-                    this.eventType = EventType.BlockBreak;
+                    clearBlockTransactionData();
+                    clearEntityData();
                     Optional<Player> playerOptional = event.getCause().first(Player.class);
                     if (playerOptional.isPresent()){
+                        System.out.println("player present");
+                        this.eventType = EventType.BlockBreak;
                         Player player = playerOptional.get();
                         setEntity(player, false);
+                        writeBlockTransaction(transaction);
+
+                        this.submitToDatabase();
                     }
-
-                    writeBlockTransaction(transaction);
-
-                    this.submitToDatabase();
                 }
             }
         }
@@ -93,12 +98,13 @@ public class Record {
             ChangeBlockEvent.Place changeBlockEventPlace = (ChangeBlockEvent.Place) event;
         }
     }
-
+    @Deprecated
     public void setEntity(Entity entity, boolean setLocation){
         if (entity instanceof Player){
             Player player = (Player) entity;
+            User user = player;
+            this.dataContainer.set(DataQuery.of("user"), user.toContainer());
 
-            this.dataContainer.set(DataQuery.of("player"), player.toContainer());
             if (setLocation){
                 location = player.getLocation();
             }
@@ -108,51 +114,71 @@ public class Record {
 
         }
     }
-
+    @Deprecated
+    public void clearEntityData(){
+        this.dataContainer.remove(DataQuery.of("user"));
+    }
+    @Deprecated
     public void writeBlockTransaction(Transaction<BlockSnapshot> blockSnapshotTransaction){
-        if (!blockSnapshotTransaction.getOriginal().getState().getType().getName().equalsIgnoreCase("minecraft:air")) {
+        BlockSnapshot originalBlockSnapshot = blockSnapshotTransaction.getOriginal();
+        if (!originalBlockSnapshot.getState().getType().getName().equalsIgnoreCase("minecraft:air")) {
+            Optional<Location<World>> worldLocation = originalBlockSnapshot.getLocation();
 
-            Optional<Location<World>> worldLocation = blockSnapshotTransaction.getFinal().getLocation();
             if (worldLocation.isPresent())
                 this.location = worldLocation.get();
 
-            this.dataContainer.set(DataQuery.of("block", "blockcontainer"), blockSnapshotTransaction.getOriginal().getState().toContainer());
+            this.dataContainer.set(DataQuery.of("block"), originalBlockSnapshot.toContainer());
         }
-
     }
-
+    @Deprecated
     public void clearBlockTransactionData(){
         this.location = null;
-        this.dataContainer.remove(DataQuery.of("block", "blockcontainer"));
+        this.dataContainer.remove(DataQuery.of("block"));
     }
 
-    public Optional<Location> getLocationFromCause(Cause cause){
-        Optional<Location> locationOptional = cause.first(Location.class);
-        if (locationOptional.isPresent()){
-            Location location = locationOptional.get();
-            return Optional.of(location);
-        }else {
-            logger.info("world location could not be found");
-        }
-        return Optional.empty();
 
+    public void writeEntity(Entity entity){
+        this.dataContainer.set(DataQuery.of("Entity"), entity.toContainer());
     }
 
-    //public DataContainer writeBlockSnapshot
+    public void writeUser(User user){
+        this.dataContainer.set(DataQuery.of("User"), user.toContainer());
+    }
+
+    public void writeItemSnapshotTransaction(Transaction<ItemStackSnapshot> itemStackSnapshotTransaction){
+        this.dataContainer.set(DataQuery.of("ItemOriginal"), itemStackSnapshotTransaction.getOriginal().toContainer());
+        this.dataContainer.set(DataQuery.of("ItemFinal"), itemStackSnapshotTransaction.getFinal().toContainer());
+    }
+
+    public void writeBlockSnapshotTransaction(Transaction<BlockSnapshot> blockSnapshotTransaction){
+        this.dataContainer.set(DataQuery.of("BlockOriginal"), blockSnapshotTransaction.getOriginal().toContainer());
+        this.dataContainer.set(DataQuery.of("BlockFinal"), blockSnapshotTransaction.getFinal().toContainer());
+    }
+
+    public void setLocalDateTime(LocalDateTime localDateTime1){
+        this.localDateTime = localDateTime1;
+    }
+
+    public void setEventType(EventType eventType) {
+        this.eventType = eventType;
+    }
+
+    public void setLocation(Location<World> location) {
+        this.location = location;
+    }
 
     public void submitToDatabase(){
-        String prepareStatementString = "INSERT INTO `blockmonitor` (`locationX`,`locationY`,`locationZ`,`worldName`,`eventtype`,`datacontiner`, `timestamp`) VALUES (?, ?, ?, ?, ?, ?, ?);";
+        String prepareStatementString = "INSERT INTO `blockmonitor` (`locationX`,`locationY`,`locationZ`,`worldName`,`eventtype`,`datacontainer`, `timestamp`) VALUES (?, ?, ?, ?, ?, ?, ?);";
         try {
             DataFormat dataFormat = DataFormats.JSON;
-            OutputStream outputStream = new ByteArrayOutputStream();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             try {
                 dataFormat.writeTo(outputStream, dataContainer);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            outputStream.write(byteArrayOutputStream.toByteArray());
-            String outputString = byteArrayOutputStream.toString();
+            String output = new String(outputStream.toByteArray(), Charset.defaultCharset());
+            //System.out.println(output);
 
             Connection connection = BlockMonitor.storageHandler.dataSource.getConnection();
 
@@ -170,17 +196,15 @@ public class Record {
                 prepareStatement.setString(4, "unknown");
             }
             prepareStatement.setString(5, eventType.name());
-            prepareStatement.setString(6, outputString);
+            prepareStatement.setString(6, output);
             prepareStatement.setTimestamp(7, Timestamp.valueOf(localDateTime));
             System.out.println("Record submit to db : " + prepareStatement.execute());
 
             //cleanup
             prepareStatement.close();
             connection.close();
-        } catch (SQLException | IOException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
         }
     }
 

@@ -33,15 +33,11 @@ public class onSearchNear implements CommandExecutor{
                 Player player = (Player) commandSource;
                 Location<World> locationWorld = player.getLocation();
                 try {
-                    SearchHelper.searchArea(locationWorld, 10);
                     PaginationList.Builder builder = PaginationList.builder();
 
-                    List<Text> textList = SearchHelper.searchArea(locationWorld, 10);
-                    for (Text text:textList) {
-                        text.toBuilder().append(Text.of(""));
-                    }
+                    List<Text> textList = SearchHelper.searchArea(locationWorld, 10, player.getLocale());
 
-                    builder.contents(SearchHelper.searchArea(locationWorld, 10));
+                    builder.contents(textList);
                     builder.title(Text.of("Search Near"));
                     builder.build().sendTo(player);
                 } catch (SQLException e) {

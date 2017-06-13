@@ -7,5 +7,6 @@ public enum EventType {
     Unknown,
     ConnectionEvent,
     DisconnectionEvent,
-    BlockBreak
+    BlockBreak,
+    BlockPlace
 }
