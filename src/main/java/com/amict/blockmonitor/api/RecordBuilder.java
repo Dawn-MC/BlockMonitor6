@@ -7,7 +7,11 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.item.inventory.AffectItemStackEvent;
+import org.spongepowered.api.event.item.inventory.AffectSlotEvent;
+import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -19,11 +23,8 @@ import java.util.Optional;
  * Created by johnfg10 on 13/06/2017.
  */
 public class RecordBuilder {
-    protected final Event event;
 
     public RecordBuilder(Event event) {
-        this.event = event;
-
         LocalDateTime localDateTime = LocalDateTime.now();
         if (event instanceof ClientConnectionEvent.Join) {
             ClientConnectionEvent.Join connectionEvent = (ClientConnectionEvent.Join) event;
@@ -43,8 +44,6 @@ public class RecordBuilder {
             record.submitToDatabase();
         } else if (event instanceof ChangeBlockEvent.Break) {
             ChangeBlockEvent.Break breakEvent = (ChangeBlockEvent.Break) event;
-            if (!isPlayerOrEntity(breakEvent.getCause()))
-                return;
 
             List<Transaction<BlockSnapshot>> transactionList = breakEvent.getTransactions();
             for (Transaction<BlockSnapshot> blockSnapshotTransaction : transactionList) {
@@ -60,8 +59,6 @@ public class RecordBuilder {
             }
         } else if (event instanceof ChangeBlockEvent.Place) {
             ChangeBlockEvent.Place placeEvent = (ChangeBlockEvent.Place) event;
-            if (!isPlayerOrEntity(placeEvent.getCause()))
-                return;
 
             List<Transaction<BlockSnapshot>> transactionList = placeEvent.getTransactions();
             for (Transaction<BlockSnapshot> blockSnapshotTransaction : transactionList) {
@@ -73,6 +70,61 @@ public class RecordBuilder {
                 if (worldLocation.isPresent())
                     record.setLocation(worldLocation.get());
                 record.writeBlockSnapshotTransaction(blockSnapshotTransaction);
+                record.submitToDatabase();
+            }
+        } else if (event instanceof ChangeBlockEvent.Modify){
+            ChangeBlockEvent.Modify modifyEvent = (ChangeBlockEvent.Modify) event;
+
+            List<Transaction<BlockSnapshot>> transactionList = modifyEvent.getTransactions();
+            for (Transaction<BlockSnapshot> blockSnapshotTransaction : transactionList) {
+                Record record = new Record();
+                record.setEventType(EventType.BlockModify);
+                record.setLocalDateTime(localDateTime);
+                dealWithEntityType(modifyEvent.getCause(), record);
+                Optional<Location<World>> worldLocation = blockSnapshotTransaction.getOriginal().getLocation();
+                if (worldLocation.isPresent())
+                    record.setLocation(worldLocation.get());
+                record.writeBlockSnapshotTransaction(blockSnapshotTransaction);
+                record.submitToDatabase();
+            }
+        }else if (event instanceof ChangeBlockEvent.Grow){
+            ChangeBlockEvent.Grow growEvent = (ChangeBlockEvent.Grow) event;
+            List<Transaction<BlockSnapshot>> transactionList = growEvent.getTransactions();
+            for (Transaction<BlockSnapshot> blockSnapshotTransaction : transactionList) {
+                Record record = new Record();
+                record.setEventType(EventType.BlockGrow);
+                record.setLocalDateTime(localDateTime);
+                dealWithEntityType(growEvent.getCause(), record);
+                Optional<Location<World>> worldLocation = blockSnapshotTransaction.getOriginal().getLocation();
+                if (worldLocation.isPresent())
+                    record.setLocation(worldLocation.get());
+                record.writeBlockSnapshotTransaction(blockSnapshotTransaction);
+                record.submitToDatabase();
+            }
+        }else if (event instanceof ChangeBlockEvent.Decay){
+            ChangeBlockEvent.Decay decayEvent = (ChangeBlockEvent.Decay) event;
+            List<Transaction<BlockSnapshot>> transactionList = decayEvent.getTransactions();
+            for (Transaction<BlockSnapshot> blockSnapshotTransaction : transactionList) {
+                Record record = new Record();
+                record.setEventType(EventType.BlockGrow);
+                record.setLocalDateTime(localDateTime);
+                dealWithEntityType(decayEvent.getCause(), record);
+                Optional<Location<World>> worldLocation = blockSnapshotTransaction.getOriginal().getLocation();
+                if (worldLocation.isPresent())
+                    record.setLocation(worldLocation.get());
+                record.writeBlockSnapshotTransaction(blockSnapshotTransaction);
+                record.submitToDatabase();
+            }
+        }else if (event instanceof AffectSlotEvent){
+            AffectSlotEvent affectSlotEvent = (AffectSlotEvent) event;
+            List<? extends Transaction<ItemStackSnapshot>> transactionList = affectSlotEvent.getTransactions();
+            for (Transaction<ItemStackSnapshot> itemStackSnapshot:transactionList) {
+                Record record = new Record();
+                record.setEventType(EventType.AffectSlotEvent);
+                record.setLocalDateTime(localDateTime);
+                dealWithEntityTypeWithLocation(affectSlotEvent.getCause(), record);
+
+                record.writeItemSnapshotTransaction(itemStackSnapshot);
                 record.submitToDatabase();
             }
         }
@@ -87,6 +139,21 @@ public class RecordBuilder {
             return;
         } else if (entityOptional.isPresent()) {
             record.writeEntity(entityOptional.get());
+            return;
+        }
+    }
+
+    private void dealWithEntityTypeWithLocation(Cause cause, Record record) {
+        Optional<Player> playerOptional = cause.first(Player.class);
+        Optional<Entity> entityOptional = cause.first(Entity.class);
+
+        if (playerOptional.isPresent()) {
+            record.writeUser(playerOptional.get());
+            record.setLocation(playerOptional.get().getLocation());
+            return;
+        } else if (entityOptional.isPresent()) {
+            record.writeEntity(entityOptional.get());
+            record.setLocation(entityOptional.get().getLocation());
             return;
         }
     }

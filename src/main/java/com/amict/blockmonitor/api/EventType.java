@@ -8,5 +8,8 @@ public enum EventType {
     ConnectionEvent,
     DisconnectionEvent,
     BlockBreak,
-    BlockPlace
+    BlockPlace,
+    BlockModify,
+    BlockGrow,
+    AffectSlotEvent
 }

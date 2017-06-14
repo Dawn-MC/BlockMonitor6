@@ -34,9 +34,7 @@ public class onSearchNear implements CommandExecutor{
                 Location<World> locationWorld = player.getLocation();
                 try {
                     PaginationList.Builder builder = PaginationList.builder();
-
                     List<Text> textList = SearchHelper.searchArea(locationWorld, 10, player.getLocale());
-
                     builder.contents(textList);
                     builder.title(Text.of("Search Near"));
                     builder.build().sendTo(player);

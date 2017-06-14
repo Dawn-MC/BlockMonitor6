@@ -19,8 +19,9 @@ public class StorageHandler {
     //h2
     public StorageHandler(Path folderLocation){
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:h2://" + folderLocation + "/blockmonitor;AUTO_SERVER=TRUE");
+        config.setJdbcUrl("jdbc:h2://" + folderLocation + "/blockmonitor");
         config.setDriverClassName("org.h2.Driver");
+        config.setMaximumPoolSize(100);
         dataSource = new HikariDataSource(config);
 
         try {

@@ -7,6 +7,7 @@ import com.amict.blockmonitor.commands.onSearchNear;
 import com.amict.blockmonitor.listeners.onChangeBlockEvent;
 import com.amict.blockmonitor.listeners.onClientConnectionEvent;
 import com.amict.blockmonitor.listeners.onInteractBlockEvent;
+import com.amict.blockmonitor.listeners.onInteractInventoryEvent;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -77,6 +78,7 @@ public class BlockMonitor {
         Sponge.getEventManager().registerListeners(this, new onClientConnectionEvent());
         Sponge.getEventManager().registerListeners(this, new onChangeBlockEvent());
         Sponge.getEventManager().registerListeners(this, new onInteractBlockEvent());
+        Sponge.getEventManager().registerListeners(this, new onInteractInventoryEvent());
     }
 
     @Listener

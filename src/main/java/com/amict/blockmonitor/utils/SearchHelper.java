@@ -6,6 +6,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataQuery;
+import org.spongepowered.api.data.DataView;
 import org.spongepowered.api.data.persistence.DataFormat;
 import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.entity.Entity;
@@ -115,7 +116,7 @@ public class SearchHelper {
         return contents;
     }
 
-    public static Text formattedText(int id, int locationx, int locationy, int locationz, String worldname, String eventTypeString, DataContainer dataContainer, LocalDateTime eventDateTime, Locale locale){
+    public static Text formattedText(int id, int locationx, int locationy, int locationz, String worldname, String eventTypeString, DataContainer dataContainer, LocalDateTime eventDateTime, Locale locale) {
         TextTemplate textTemplate = of(
                 "ID:",
                 arg("ID"),
@@ -150,39 +151,60 @@ public class SearchHelper {
         Text.Builder cause = Text.builder();
         Text.Builder additionalInfo = Text.builder();
 
+        //dataviews
+        Optional<DataView> blockOriginalOptional = dataContainer.getView(DataQuery.of("BlockOriginal"));
+        Optional<DataView> blockFinalOptional = dataContainer.getView(DataQuery.of("BlockFinal"));
+        Optional<DataView> itemOriginalOptional = dataContainer.getView(DataQuery.of("ItemOriginal"));
+        Optional<DataView> itemFinalOptional = dataContainer.getView(DataQuery.of("ItemFinal"));
 
-        if (dataContainer.contains(DataQuery.of("BlockOriginal"))){
-            //add block info
-            Optional<BlockSnapshot> blockSnapshotOptional = Sponge.getDataManager().deserialize(BlockSnapshot.class, dataContainer.getView(DataQuery.of("BlockOriginal")).get());
-            Optional<BlockSnapshot> blockSnapshotOptional1 = Sponge.getDataManager().deserialize(BlockSnapshot.class, dataContainer.getView(DataQuery.of("BlockFinal")).get());
-            if (blockSnapshotOptional.isPresent()){
+        //logic
+        if (blockOriginalOptional.isPresent()) {
+            DataView dataView = blockOriginalOptional.get();
+            Optional<BlockSnapshot> blockSnapshotOptional = Sponge.getDataManager().deserialize(BlockSnapshot.class, dataView);
+            if (blockSnapshotOptional.isPresent()) {
                 BlockSnapshot blockSnapshot = blockSnapshotOptional.get();
                 additionalInfo.append(Text.of(blockSnapshot.getState().getType().getTranslation().get(locale))).append(Text.of(" "));
             }
-            if (blockSnapshotOptional1.isPresent()){
-                BlockSnapshot blockSnapshot = blockSnapshotOptional1.get();
-                additionalInfo.append(Text.of(blockSnapshot.getState().getType().getTranslation().get(locale)));
-            }
-        }else if (dataContainer.contains(DataQuery.of("ItemOriginal"))){
-            //add item info
-            Optional<ItemStackSnapshot> itemStackSnapshotOptional = Sponge.getDataManager().deserialize(ItemStackSnapshot.class, dataContainer.getView(DataQuery.of("ItemOriginal")).get());
-            if (itemStackSnapshotOptional.isPresent()){
-                ItemStackSnapshot itemStackSnapshot = itemStackSnapshotOptional.get();
-                additionalInfo.append(Text.of(itemStackSnapshot.getType().getTranslation().get(locale)));
+        }
+
+        if (blockFinalOptional.isPresent()) {
+            DataView dataView = blockFinalOptional.get();
+            Optional<BlockSnapshot> blockSnapshotOptional = Sponge.getDataManager().deserialize(BlockSnapshot.class, dataView);
+            if (blockSnapshotOptional.isPresent()) {
+                BlockSnapshot blockSnapshot = blockSnapshotOptional.get();
+                additionalInfo.append(Text.of(blockSnapshot.getState().getType().getTranslation().get(locale))).append(Text.of(" "));
             }
         }
 
-        if (dataContainer.contains(DataQuery.of("User"))){
+        if (itemOriginalOptional.isPresent()) {
+            DataView dataView = itemOriginalOptional.get();
+            Optional<ItemStackSnapshot> itemStackSnapshotOptional = Sponge.getDataManager().deserialize(ItemStackSnapshot.class, dataView);
+            if (itemStackSnapshotOptional.isPresent()) {
+                ItemStackSnapshot itemStackSnapshot = itemStackSnapshotOptional.get();
+                additionalInfo.append(Text.of(itemStackSnapshot.getType().getTranslation().get(locale))).append(Text.of(" "));
+            }
+        }
+
+        if (itemFinalOptional.isPresent()) {
+            DataView dataView = itemFinalOptional.get();
+            Optional<ItemStackSnapshot> itemStackSnapshotOptional = Sponge.getDataManager().deserialize(ItemStackSnapshot.class, dataView);
+            if (itemStackSnapshotOptional.isPresent()) {
+                ItemStackSnapshot itemStackSnapshot = itemStackSnapshotOptional.get();
+                additionalInfo.append(Text.of(itemStackSnapshot.getType().getTranslation().get(locale))).append(Text.of(" "));
+            }
+        }
+
+        if (dataContainer.contains(DataQuery.of("User"))) {
             //add player info
             Optional<User> userOptional = Sponge.getDataManager().deserialize(User.class, dataContainer.getView(DataQuery.of("User")).get());
-            if (userOptional.isPresent()){
+            if (userOptional.isPresent()) {
                 User user = userOptional.get();
                 cause.append(Text.of(user.getName()));
             }
-        }else if(dataContainer.contains(DataQuery.of("Entity"))){
+        } else if (dataContainer.contains(DataQuery.of("Entity"))) {
             //add entity info
             Optional<Entity> entityOptional = Sponge.getDataManager().deserialize(Entity.class, dataContainer.getView(DataQuery.of("Entity")).get());
-            if (entityOptional.isPresent()){
+            if (entityOptional.isPresent()) {
                 Entity entity = entityOptional.get();
                 cause.append(Text.of(entity.getType().getTranslation().get(locale)));
             }
@@ -191,17 +213,6 @@ public class SearchHelper {
         textTemplateMap.put("cause", cause);
         textTemplateMap.put("additionalInfo", additionalInfo);
         return textTemplate.apply(textTemplateMap).build();
-    }
 
-    public static Optional<String> getDataContainerImportantInfo(DataContainer dataContainer, EventType type){
-        switch (type){
-            case BlockBreak:
-                return dataContainer.getString(DataQuery.of("block", "blocksnapshotDataContainer", "BlockState", "BlockState"));
-            case ConnectionEvent:
-                return dataContainer.getString(DataQuery.of("player", "name"));
-            case DisconnectionEvent:
-                return dataContainer.getString(DataQuery.of("player", "name"));
-        }
-        return Optional.empty();
     }
 }
