@@ -16,7 +16,6 @@ import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
-import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
 
@@ -41,24 +40,32 @@ public class BlockMonitor {
     @ConfigDir(sharedRoot = false)
     private Path privateConfigDir;
 
-    private File configFile = new File(privateConfigDir + "/BlockMonitor.cfg");
+    private File configFile;
 
-    ConfigurationLoader<CommentedConfigurationNode> configLoader = HoconConfigurationLoader.builder().setFile(configFile).build();
+    ConfigurationLoader<CommentedConfigurationNode> configLoader;
 
     CommentedConfigurationNode configNode;
 
     public static StorageHandler storageHandler;
 
-    public static boolean isInspectEnabled = false;
-
-    //ToDo add to config
     public static ExecutorService executor;
-
 
     @Listener
     public void onPreInit(GamePreInitializationEvent event){
+
+    }
+
+    @Listener
+    public void onServerStart(GameStartedServerEvent event) {
         storageHandler = new StorageHandler(privateConfigDir);
+        configFile = new File(privateConfigDir + File.separator + "main.cfg");
         if (!configFile.exists()){
+            try {
+                configFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            configLoader = HoconConfigurationLoader.builder().setFile(configFile).build();
             configNode = configLoader.createEmptyNode();
             configNode.getNode("config", "version").setValue("0.0.1").setComment("automatic setting no touchy");
             configNode.getNode("threading", "excepool").setValue(10).setComment("The amount of threads used by the thread pool");
@@ -71,18 +78,15 @@ public class BlockMonitor {
                 e.printStackTrace();
             }
         }else {
+            configLoader = HoconConfigurationLoader.builder().setFile(configFile).build();
             try {
                 configNode = configLoader.load();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-
         executor = Executors.newFixedThreadPool(configNode.getNode("threading", "excepool").getInt());
-    }
 
-    @Listener
-    public void onServerStart(GameStartedServerEvent event) {
         CommandSpec onSearchNear = CommandSpec.builder()
                 .description(Text.of("Searches in a 10 block area!"))
                 .permission("blockmonitor.search.near")
