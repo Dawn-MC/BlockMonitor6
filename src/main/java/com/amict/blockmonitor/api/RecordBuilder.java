@@ -8,6 +8,7 @@ import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.item.inventory.ChangeInventoryEvent;
+import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.world.Location;
@@ -54,10 +55,6 @@ public class RecordBuilder implements Runnable {
             record.setLocation(entityOptional.get().getLocation());
             return;
         }
-    }
-
-    private boolean isPlayerOrEntity(Cause cause) {
-        return cause.containsType(Player.class) || cause.containsType(Entity.class);
     }
 
     @Override
@@ -151,7 +148,7 @@ public class RecordBuilder implements Runnable {
                 record.writeBlockSnapshotTransaction(blockSnapshotTransaction);
                 record.submitToDatabase();
             }
-        }else if (event instanceof ChangeInventoryEvent.Transfer){
+        }else if (event instanceof InteractInventoryEvent){
             ChangeInventoryEvent.Transfer changeInventoryEventTransfer = (ChangeInventoryEvent.Transfer) event;
             List<? extends Transaction<ItemStackSnapshot>> transactionList = changeInventoryEventTransfer.getTransactions();
             for (Transaction<ItemStackSnapshot> itemStackSnapshot:transactionList) {

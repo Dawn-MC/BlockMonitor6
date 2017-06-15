@@ -50,13 +50,35 @@ public class BlockMonitor {
     public static StorageHandler storageHandler;
 
     public static boolean isInspectEnabled = false;
+
     //ToDo add to config
-    public static ExecutorService executor = Executors.newFixedThreadPool(50);
+    public static ExecutorService executor;
 
 
     @Listener
     public void onPreInit(GamePreInitializationEvent event){
         storageHandler = new StorageHandler(privateConfigDir);
+        if (!configFile.exists()){
+            configNode = configLoader.createEmptyNode();
+            configNode.getNode("config", "version").setValue("0.0.1").setComment("automatic setting no touchy");
+            configNode.getNode("threading", "excepool").setValue(10).setComment("The amount of threads used by the thread pool");
+            configNode.getNode("modules", "tracking", "inventory").setValue(true).setComment("set to false to disable inventory tracking");
+            configNode.getNode("modules", "tracking", "block").setValue(true).setComment("set to false to disable block tracking");
+            configNode.getNode("modules", "tracking", "connection").setValue(true).setComment("set to false to disable connection tracking");
+            try {
+                configLoader.save(configNode);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }else {
+            try {
+                configNode = configLoader.load();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        executor = Executors.newFixedThreadPool(configNode.getNode("threading", "excepool").getInt());
     }
 
     @Listener
@@ -73,34 +95,20 @@ public class BlockMonitor {
                 .permission("blockmonitor.restore.near")
                 .executor(new onRestoreNear())
                 .build();
-
         Sponge.getCommandManager().register(this, onRestoreNear, "restorenear", "restoren", "rn");
         //Listeners
-        Sponge.getEventManager().registerListeners(this, new onClientConnectionEvent());
-        Sponge.getEventManager().registerListeners(this, new onChangeBlockEvent());
-        Sponge.getEventManager().registerListeners(this, new onInteractBlockEvent());
-        Sponge.getEventManager().registerListeners(this, new onInteractInventoryEvent());
-        Sponge.getEventManager().registerListeners(this, new onChangeInventoryEventTransfer());
+        if (configNode.getNode("modules", "tracking", "connection").getBoolean())
+            Sponge.getEventManager().registerListeners(this, new onClientConnectionEvent());
+        if (configNode.getNode("modules", "tracking", "block").getBoolean())
+            Sponge.getEventManager().registerListeners(this, new onChangeBlockEvent());
+        if (configNode.getNode("modules", "tracking", "inventory").getBoolean())
+            Sponge.getEventManager().registerListeners(this, new onInteractInventoryEvent());
     }
 
     @Listener
-    public void onServerStop(GameStoppedServerEvent event){
-        if (storageHandler != null){
+    public void onServerStop(GameStoppedServerEvent event) {
+        if (storageHandler != null) {
             storageHandler.shutdownHook();
         }
-    }
-
-    @Listener
-    public void onPlayerLeave(ClientConnectionEvent.Disconnect event){
-/*        System.out.println("player disconnected!");
-        try {
-            ResultSet rs = storageHandler.dataSource.getConnection().createStatement().executeQuery("SELECT * FROM `blockmonitor` WHERE `locationX` > 100 AND `locationX` < 200");
-            while(rs.next()){
-                System.out.println("theres a row!!!");
-                System.out.println(rs.getString(2));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }*/
     }
 }
