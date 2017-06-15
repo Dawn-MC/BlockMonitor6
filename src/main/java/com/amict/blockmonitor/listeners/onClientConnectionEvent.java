@@ -1,5 +1,6 @@
 package com.amict.blockmonitor.listeners;
 
+import com.amict.blockmonitor.BlockMonitor;
 import com.amict.blockmonitor.api.Record;
 import com.amict.blockmonitor.api.RecordBuilder;
 import org.spongepowered.api.entity.living.player.Player;
@@ -18,5 +19,6 @@ public class onClientConnectionEvent {
     @Listener(order = Order.LAST)
     public void clientConnectionEvent(ClientConnectionEvent event){
         RecordBuilder recordBuilder = new RecordBuilder(event);
+        BlockMonitor.executor.execute(recordBuilder);
     }
 }

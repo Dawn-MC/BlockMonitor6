@@ -7,9 +7,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.event.item.inventory.AffectItemStackEvent;
-import org.spongepowered.api.event.item.inventory.AffectSlotEvent;
-import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
+import org.spongepowered.api.event.item.inventory.ChangeInventoryEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.world.Location;
@@ -22,10 +20,48 @@ import java.util.Optional;
 /**
  * Created by johnfg10 on 13/06/2017.
  */
-public class RecordBuilder {
+public class RecordBuilder implements Runnable {
 
-    public RecordBuilder(Event event) {
-        LocalDateTime localDateTime = LocalDateTime.now();
+    protected Event event;
+    LocalDateTime localDateTime = LocalDateTime.now();
+    public RecordBuilder(Event event1) {
+        this.event = event1;
+    }
+
+    private void dealWithEntityType(Cause cause, Record record) {
+        Optional<Player> playerOptional = cause.first(Player.class);
+        Optional<Entity> entityOptional = cause.first(Entity.class);
+
+        if (playerOptional.isPresent()) {
+            record.writeUser(playerOptional.get());
+            return;
+        } else if (entityOptional.isPresent()) {
+            record.writeEntity(entityOptional.get());
+            return;
+        }
+    }
+
+    private void dealWithEntityTypeWithLocation(Cause cause, Record record) {
+        Optional<Player> playerOptional = cause.first(Player.class);
+        Optional<Entity> entityOptional = cause.first(Entity.class);
+
+        if (playerOptional.isPresent()) {
+            record.writeUser(playerOptional.get());
+            record.setLocation(playerOptional.get().getLocation());
+            return;
+        } else if (entityOptional.isPresent()) {
+            record.writeEntity(entityOptional.get());
+            record.setLocation(entityOptional.get().getLocation());
+            return;
+        }
+    }
+
+    private boolean isPlayerOrEntity(Cause cause) {
+        return cause.containsType(Player.class) || cause.containsType(Entity.class);
+    }
+
+    @Override
+    public void run() {
         if (event instanceof ClientConnectionEvent.Join) {
             ClientConnectionEvent.Join connectionEvent = (ClientConnectionEvent.Join) event;
             Record record = new Record();
@@ -115,50 +151,18 @@ public class RecordBuilder {
                 record.writeBlockSnapshotTransaction(blockSnapshotTransaction);
                 record.submitToDatabase();
             }
-        }else if (event instanceof AffectSlotEvent){
-            AffectSlotEvent affectSlotEvent = (AffectSlotEvent) event;
-            List<? extends Transaction<ItemStackSnapshot>> transactionList = affectSlotEvent.getTransactions();
+        }else if (event instanceof ChangeInventoryEvent.Transfer){
+            ChangeInventoryEvent.Transfer changeInventoryEventTransfer = (ChangeInventoryEvent.Transfer) event;
+            List<? extends Transaction<ItemStackSnapshot>> transactionList = changeInventoryEventTransfer.getTransactions();
             for (Transaction<ItemStackSnapshot> itemStackSnapshot:transactionList) {
                 Record record = new Record();
                 record.setEventType(EventType.AffectSlotEvent);
                 record.setLocalDateTime(localDateTime);
-                dealWithEntityTypeWithLocation(affectSlotEvent.getCause(), record);
+                dealWithEntityTypeWithLocation(changeInventoryEventTransfer.getCause(), record);
 
                 record.writeItemSnapshotTransaction(itemStackSnapshot);
                 record.submitToDatabase();
             }
         }
-    }
-
-    private void dealWithEntityType(Cause cause, Record record) {
-        Optional<Player> playerOptional = cause.first(Player.class);
-        Optional<Entity> entityOptional = cause.first(Entity.class);
-
-        if (playerOptional.isPresent()) {
-            record.writeUser(playerOptional.get());
-            return;
-        } else if (entityOptional.isPresent()) {
-            record.writeEntity(entityOptional.get());
-            return;
-        }
-    }
-
-    private void dealWithEntityTypeWithLocation(Cause cause, Record record) {
-        Optional<Player> playerOptional = cause.first(Player.class);
-        Optional<Entity> entityOptional = cause.first(Entity.class);
-
-        if (playerOptional.isPresent()) {
-            record.writeUser(playerOptional.get());
-            record.setLocation(playerOptional.get().getLocation());
-            return;
-        } else if (entityOptional.isPresent()) {
-            record.writeEntity(entityOptional.get());
-            record.setLocation(entityOptional.get().getLocation());
-            return;
-        }
-    }
-
-    private boolean isPlayerOrEntity(Cause cause) {
-        return cause.containsType(Player.class) || cause.containsType(Entity.class);
     }
 }

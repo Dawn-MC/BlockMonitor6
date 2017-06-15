@@ -4,10 +4,7 @@ package com.amict.blockmonitor;
 import com.amict.blockmonitor.Storage.StorageHandler;
 import com.amict.blockmonitor.commands.onRestoreNear;
 import com.amict.blockmonitor.commands.onSearchNear;
-import com.amict.blockmonitor.listeners.onChangeBlockEvent;
-import com.amict.blockmonitor.listeners.onClientConnectionEvent;
-import com.amict.blockmonitor.listeners.onInteractBlockEvent;
-import com.amict.blockmonitor.listeners.onInteractInventoryEvent;
+import com.amict.blockmonitor.listeners.*;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -25,6 +22,8 @@ import org.spongepowered.api.text.Text;
 
 import java.io.*;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 @Plugin(
@@ -51,6 +50,8 @@ public class BlockMonitor {
     public static StorageHandler storageHandler;
 
     public static boolean isInspectEnabled = false;
+    //ToDo add to config
+    public static ExecutorService executor = Executors.newFixedThreadPool(50);
 
 
     @Listener
@@ -79,6 +80,7 @@ public class BlockMonitor {
         Sponge.getEventManager().registerListeners(this, new onChangeBlockEvent());
         Sponge.getEventManager().registerListeners(this, new onInteractBlockEvent());
         Sponge.getEventManager().registerListeners(this, new onInteractInventoryEvent());
+        Sponge.getEventManager().registerListeners(this, new onChangeInventoryEventTransfer());
     }
 
     @Listener
