@@ -1,6 +1,7 @@
 package com.amict.blockmonitor.utils;
 
 import com.amict.blockmonitor.BlockMonitor;
+import com.amict.blockmonitor.api.DataContainerHelper;
 import com.amict.blockmonitor.api.EventType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
@@ -15,6 +16,7 @@ import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.TextElement;
 import org.spongepowered.api.text.TextTemplate;
+import org.spongepowered.api.text.TranslatableText;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -89,11 +91,10 @@ public class SearchHelper {
         List<org.spongepowered.api.text.Text> contents = new ArrayList<>();
 
         while (resultSet.next()) {
-            String info = resultSet.getString("datacontainer");
-            try {
-                InputStream inputStream = new ByteArrayInputStream(info.getBytes());
-                DataFormat dataFormat = DataFormats.JSON;
-                DataContainer dataContainer = dataFormat.readFrom(inputStream);
+            String string = resultSet.getString("datacontainer");
+            Optional<DataContainer> dataContainerOptional = DataContainerHelper.getDataContainerFromString(string);
+            if (dataContainerOptional.isPresent()){
+                DataContainer dataContainer = dataContainerOptional.get();
                 Text text = formattedText(
                         resultSet.getInt("id"),
                         resultSet.getInt("locationX"),
@@ -106,8 +107,6 @@ public class SearchHelper {
                         locale
                 );
                 contents.add(text);
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
 
@@ -163,7 +162,7 @@ public class SearchHelper {
             Optional<BlockSnapshot> blockSnapshotOptional = Sponge.getDataManager().deserialize(BlockSnapshot.class, dataView);
             if (blockSnapshotOptional.isPresent()) {
                 BlockSnapshot blockSnapshot = blockSnapshotOptional.get();
-                additionalInfo.append(Text.of(blockSnapshot.getState().getType().getTranslation().get(locale))).append(Text.of(" "));
+                additionalInfo.append(Text.of(blockSnapshot.getState().getType().getName())).append(Text.of(" "));
             }
         }
 
@@ -172,7 +171,7 @@ public class SearchHelper {
             Optional<BlockSnapshot> blockSnapshotOptional = Sponge.getDataManager().deserialize(BlockSnapshot.class, dataView);
             if (blockSnapshotOptional.isPresent()) {
                 BlockSnapshot blockSnapshot = blockSnapshotOptional.get();
-                additionalInfo.append(Text.of(blockSnapshot.getState().getType().getTranslation().get(locale))).append(Text.of(" "));
+                additionalInfo.append(Text.of(blockSnapshot.getState().getType().getName())).append(Text.of(" "));
             }
         }
 
@@ -181,7 +180,7 @@ public class SearchHelper {
             Optional<ItemStackSnapshot> itemStackSnapshotOptional = Sponge.getDataManager().deserialize(ItemStackSnapshot.class, dataView);
             if (itemStackSnapshotOptional.isPresent()) {
                 ItemStackSnapshot itemStackSnapshot = itemStackSnapshotOptional.get();
-                additionalInfo.append(Text.of(itemStackSnapshot.getType().getTranslation().get(locale))).append(Text.of(" "));
+                additionalInfo.append(Text.of(itemStackSnapshot.createStack().getTranslation().get(locale))).append(Text.of(" "));
             }
         }
 
@@ -190,7 +189,7 @@ public class SearchHelper {
             Optional<ItemStackSnapshot> itemStackSnapshotOptional = Sponge.getDataManager().deserialize(ItemStackSnapshot.class, dataView);
             if (itemStackSnapshotOptional.isPresent()) {
                 ItemStackSnapshot itemStackSnapshot = itemStackSnapshotOptional.get();
-                additionalInfo.append(Text.of(itemStackSnapshot.getType().getTranslation().get(locale))).append(Text.of(" "));
+                additionalInfo.append(Text.of(itemStackSnapshot.createStack().getTranslation().get(locale))).append(Text.of(" "));
             }
         }
 
