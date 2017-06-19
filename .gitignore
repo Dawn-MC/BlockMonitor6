@@ -27,4 +27,4 @@ build/*
 .gradle/*
 
 BlockMonitor\.iml
-/gradle.properties
+gradle.properties
