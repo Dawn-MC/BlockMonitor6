@@ -27,8 +27,8 @@ import java.util.logging.Logger;
 
 @Plugin(
         id = "blockmonitor",
-        name = "BlockMonitor",
-        version = "0.1.0",
+        name = "Block Monitor",
+        version = "1.0.0",
         description = "A plugin that monitors what players do ingame and logs it!"
 )
 public class BlockMonitor {
@@ -67,11 +67,12 @@ public class BlockMonitor {
             }
             configLoader = HoconConfigurationLoader.builder().setFile(configFile).build();
             configNode = configLoader.createEmptyNode();
-            configNode.getNode("config", "version").setValue("0.0.1").setComment("automatic setting no touchy");
+            configNode.getNode("config", "version").setValue("0.0.2").setComment("automatic setting no touchy");
             configNode.getNode("threading", "excepool").setValue(10).setComment("The amount of threads used by the thread pool");
             configNode.getNode("modules", "tracking", "inventory").setValue(true).setComment("set to false to disable inventory tracking");
             configNode.getNode("modules", "tracking", "block").setValue(true).setComment("set to false to disable block tracking");
             configNode.getNode("modules", "tracking", "connection").setValue(true).setComment("set to false to disable connection tracking");
+            configNode.getNode("modules", "tracking", "useItemStack").setValue(true).setComment("set to false to disable item stack usage tracking");
             try {
                 configLoader.save(configNode);
             } catch (IOException e) {
@@ -101,12 +102,15 @@ public class BlockMonitor {
                 .build();
         Sponge.getCommandManager().register(this, onRestoreNear, "restorenear", "restoren", "rn");
         //Listeners
-        if (configNode.getNode("modules", "tracking", "connection").getBoolean())
+        if (configNode.getNode("modules", "tracking", "connection").getBoolean(true))
             Sponge.getEventManager().registerListeners(this, new onClientConnectionEvent());
-        if (configNode.getNode("modules", "tracking", "block").getBoolean())
+        if (configNode.getNode("modules", "tracking", "block").getBoolean(true))
             Sponge.getEventManager().registerListeners(this, new onChangeBlockEvent());
-        if (configNode.getNode("modules", "tracking", "inventory").getBoolean())
+        if (configNode.getNode("modules", "tracking", "inventory").getBoolean(true))
             Sponge.getEventManager().registerListeners(this, new onInteractInventoryEvent());
+        if (configNode.getNode("modules", "tracking", "useItemStack").getBoolean(true))
+            Sponge.getEventManager().registerListeners(this, new onUseItemStackEvent());
+
     }
 
     @Listener
