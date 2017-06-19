@@ -11,5 +11,7 @@ public enum EventType {
     BlockPlace,
     BlockModify,
     BlockGrow,
-    AffectSlotEvent
+    InteractInventoryEvent,
+    UseItemStackEventStart,
+    UseItemStackEventStop
 }
