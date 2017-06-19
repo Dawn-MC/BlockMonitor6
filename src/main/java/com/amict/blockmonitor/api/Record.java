@@ -150,6 +150,10 @@ public class Record {
         this.dataContainer.set(DataQuery.of("ItemFinal"), itemStackSnapshotTransaction.getFinal().toContainer());
     }
 
+    public void writeItemSnapshot(ItemStackSnapshot itemStackSnapshot){
+        this.dataContainer.set(DataQuery.of("ItemFinal"), itemStackSnapshot.toContainer());
+    }
+
     public void writeBlockSnapshotTransaction(Transaction<BlockSnapshot> blockSnapshotTransaction){
         this.dataContainer.set(DataQuery.of("BlockOriginal"), blockSnapshotTransaction.getOriginal().toContainer());
         this.dataContainer.set(DataQuery.of("BlockFinal"), blockSnapshotTransaction.getFinal().toContainer());
