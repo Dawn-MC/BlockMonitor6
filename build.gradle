@@ -1,6 +1,7 @@
 plugins {
     id "com.qixalite.spongestart" version "1.6.0"
     id "java"
+    id "signing"
 }
 
 sourceCompatibility = 1.8
@@ -9,6 +10,15 @@ repositories {
     mavenCentral()
     maven {
         url 'https://repo.spongepowered.org/maven/'
+    }
+}
+
+signing {
+    if (project.hasProperty('signing.keyId') && project.hasProperty('signing.password') && project.hasProperty('signing.secretKeyRingFile')) {
+        sign configurations.archives
+
+        /* Uncomment this if you use shadow in your build process */
+        // sign configurations.shadow
     }
 }
 
@@ -24,8 +34,4 @@ dependencies {
     compile 'org.spongepowered:spongeapi:6.0.0'
     compile 'com.zaxxer:HikariCP:2.6.2'
     compile group: 'com.h2database', name: 'h2', version: '1.4.195'
-}
-
-assemble {
-    jar
 }
