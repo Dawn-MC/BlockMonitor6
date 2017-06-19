@@ -5,8 +5,9 @@ plugins {
 }
 
 sourceCompatibility = 1.8
+jar.archiveName = 'BlockMonitor-' + project.getProperties().get('pluginVersion') + '.jar'
 
-repositories {
+        repositories {
     mavenCentral()
     maven {
         url 'https://repo.spongepowered.org/maven/'
