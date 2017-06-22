@@ -9,6 +9,7 @@ import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.item.inventory.ChangeInventoryEvent;
 import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
+import org.spongepowered.api.event.item.inventory.UseItemStackEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.world.Location;
@@ -149,17 +150,33 @@ public class RecordBuilder implements Runnable {
                 record.submitToDatabase();
             }
         }else if (event instanceof InteractInventoryEvent){
-            ChangeInventoryEvent.Transfer changeInventoryEventTransfer = (ChangeInventoryEvent.Transfer) event;
-            List<? extends Transaction<ItemStackSnapshot>> transactionList = changeInventoryEventTransfer.getTransactions();
-            for (Transaction<ItemStackSnapshot> itemStackSnapshot:transactionList) {
+            InteractInventoryEvent changeInventoryEventTransfer = (InteractInventoryEvent) event;
+            Transaction<ItemStackSnapshot> itemStackSnapshotTransaction = changeInventoryEventTransfer.getCursorTransaction();
                 Record record = new Record();
-                record.setEventType(EventType.AffectSlotEvent);
+                record.setEventType(EventType.InteractInventoryEvent);
                 record.setLocalDateTime(localDateTime);
                 dealWithEntityTypeWithLocation(changeInventoryEventTransfer.getCause(), record);
 
-                record.writeItemSnapshotTransaction(itemStackSnapshot);
+                record.writeItemSnapshotTransaction(itemStackSnapshotTransaction);
                 record.submitToDatabase();
-            }
+        }else if(event instanceof UseItemStackEvent.Start){
+            UseItemStackEvent.Start useItemStackEventStart = (UseItemStackEvent.Start) event;
+            Record record = new Record();
+            record.setEventType(EventType.UseItemStackEventStart);
+            record.setLocalDateTime(localDateTime);
+            dealWithEntityTypeWithLocation(useItemStackEventStart.getCause(), record);
+
+            record.writeItemSnapshot(useItemStackEventStart.getItemStackInUse());
+            record.submitToDatabase();
+        }else if (event instanceof UseItemStackEvent.Stop){
+            UseItemStackEvent.Stop useItemStackEventStop = (UseItemStackEvent.Stop) event;
+            Record record = new Record();
+            record.setEventType(EventType.UseItemStackEventStart);
+            record.setLocalDateTime(localDateTime);
+            dealWithEntityTypeWithLocation(useItemStackEventStop.getCause(), record);
+
+            record.writeItemSnapshot(useItemStackEventStop.getItemStackInUse());
+            record.submitToDatabase();
         }
     }
 }
