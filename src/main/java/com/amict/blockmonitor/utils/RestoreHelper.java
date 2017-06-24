@@ -60,11 +60,11 @@ public class RestoreHelper {
             }
 
             
-            return Text.builder().color(TextColors.GREEN).append(Text.of("successful")).build();
+            return Text.builder().color(TextColors.GREEN).append(Text.of("Restore successful")).build();
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return Text.builder().color(TextColors.RED).append(Text.of("Failed")).build();
+        return Text.builder().color(TextColors.RED).append(Text.of("Restore Failed")).build();
     }
 }
