@@ -1,4 +1,4 @@
-package com.amict.blockmonitor.commands;
+package com.dawnmcdevelop.blockmonitor.commands;
 
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;

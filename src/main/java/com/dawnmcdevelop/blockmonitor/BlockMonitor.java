@@ -1,10 +1,10 @@
-package com.amict.blockmonitor;
+package com.dawnmcdevelop.blockmonitor;
 
 
-import com.amict.blockmonitor.Storage.StorageHandler;
-import com.amict.blockmonitor.commands.onRestoreNear;
-import com.amict.blockmonitor.commands.onSearchNear;
-import com.amict.blockmonitor.listeners.*;
+import com.dawnmcdevelop.blockmonitor.Storage.StorageHandler;
+import com.dawnmcdevelop.blockmonitor.commands.onRestoreNear;
+import com.dawnmcdevelop.blockmonitor.commands.onSearchNear;
+import com.dawnmcdevelop.blockmonitor.listeners.*;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;

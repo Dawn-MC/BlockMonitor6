@@ -1,8 +1,8 @@
-package com.amict.blockmonitor.utils;
+package com.dawnmcdevelop.blockmonitor.utils;
 
-import com.amict.blockmonitor.BlockMonitor;
-import com.amict.blockmonitor.api.DataContainerHelper;
-import com.amict.blockmonitor.api.EventType;
+import com.dawnmcdevelop.blockmonitor.BlockMonitor;
+import com.dawnmcdevelop.blockmonitor.api.DataContainerHelper;
+import com.dawnmcdevelop.blockmonitor.api.EventType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.DataContainer;
@@ -21,6 +21,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 
+import static com.dawnmcdevelop.blockmonitor.BlockMonitor.storageHandler;
+
 /**
  * Created by johnfg10 on 13/06/2017.
  */
@@ -29,7 +31,7 @@ public class RestoreHelper {
     public static Text restoreArea(Location<World> worldLocation, int restoreDiameter){
         try {
             String sql = "SELECT * FROM `blockmonitor` WHERE (`worldName` = ?) AND (`locationX` <= ?) AND (`locationX` >= ?) AND (`locationZ` <= ?) AND (`locationZ` >= ?);";
-            Connection connection = BlockMonitor.storageHandler.dataSource.getConnection();
+            Connection connection = storageHandler.dataSource.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, worldLocation.getExtent().getName());
             preparedStatement.setInt(2, worldLocation.getBlockX() + restoreDiameter);

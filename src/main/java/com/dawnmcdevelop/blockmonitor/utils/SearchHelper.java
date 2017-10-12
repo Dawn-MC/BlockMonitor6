@@ -1,8 +1,8 @@
-package com.amict.blockmonitor.utils;
+package com.dawnmcdevelop.blockmonitor.utils;
 
-import com.amict.blockmonitor.BlockMonitor;
-import com.amict.blockmonitor.api.DataContainerHelper;
-import com.amict.blockmonitor.api.EventType;
+import com.dawnmcdevelop.blockmonitor.BlockMonitor;
+import com.dawnmcdevelop.blockmonitor.api.DataContainerHelper;
+import com.dawnmcdevelop.blockmonitor.api.EventType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.DataContainer;
@@ -34,7 +34,7 @@ import java.util.*;
 
 import static org.spongepowered.api.text.TextTemplate.arg;
 import static org.spongepowered.api.text.TextTemplate.of;
-
+import static com.dawnmcdevelop.blockmonitor.BlockMonitor.storageHandler;
 /**
  * Created by johnfg10 on 08/06/2017.
  */
@@ -42,7 +42,7 @@ public class SearchHelper {
     public static List<Text> searchArea(Location<World> worldLocation, int searchDiameter, Locale locale) throws SQLException {
 
         String sql = "SELECT * FROM `blockmonitor` WHERE (`worldName` = ?) AND (`locationX` <= ?) AND (`locationX` >= ?) AND (`locationZ` <= ?) AND (`locationZ` >= ?);";
-        Connection connection = BlockMonitor.storageHandler.dataSource.getConnection();
+        Connection connection = storageHandler.dataSource.getConnection();
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setString(1, worldLocation.getExtent().getName());
         preparedStatement.setInt(2, worldLocation.getBlockX() + searchDiameter);
@@ -83,7 +83,7 @@ public class SearchHelper {
     public static List<Text> searchWorld(Location<World> worldLocation, int searchDiameter, Locale locale) throws SQLException {
 
         String sql = "SELECT * FROM `blockmonitor` WHERE (`worldName` = ?);";
-        Connection connection = BlockMonitor.storageHandler.dataSource.getConnection();
+        Connection connection = storageHandler.dataSource.getConnection();
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setString(1, worldLocation.getExtent().getName());
 

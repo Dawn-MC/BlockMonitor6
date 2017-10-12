@@ -1,6 +1,6 @@
-package com.amict.blockmonitor.commands;
+package com.dawnmcdevelop.blockmonitor.commands;
 
-import com.amict.blockmonitor.utils.RestoreHelper;
+import com.dawnmcdevelop.blockmonitor.utils.RestoreHelper;
 import org.h2.tools.Restore;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;

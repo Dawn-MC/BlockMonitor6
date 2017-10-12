@@ -1,6 +1,6 @@
-package com.amict.blockmonitor.api;
+package com.dawnmcdevelop.blockmonitor.api;
 
-import com.amict.blockmonitor.BlockMonitor;
+import com.dawnmcdevelop.blockmonitor.BlockMonitor;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.spongepowered.api.block.BlockSnapshot;

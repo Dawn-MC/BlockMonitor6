@@ -1,4 +1,4 @@
-package com.amict.blockmonitor.api;
+package com.dawnmcdevelop.blockmonitor.api;
 
 /**
  * Created by johnfg10 on 04/06/2017.
