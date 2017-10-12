@@ -1,4 +1,4 @@
-package com.dawnmcdevelop.blockmonitor.Storage;
+package com.dawndevelop.blockmonitor.Storage;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

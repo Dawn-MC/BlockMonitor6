@@ -1,6 +1,6 @@
-package com.dawnmcdevelop.blockmonitor.api;
+package com.dawndevelop.blockmonitor.api;
 
-import com.dawnmcdevelop.blockmonitor.BlockMonitor;
+import com.dawndevelop.blockmonitor.BlockMonitor;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.spongepowered.api.block.BlockSnapshot;
@@ -24,7 +24,6 @@ import org.spongepowered.api.world.explosion.Explosion;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

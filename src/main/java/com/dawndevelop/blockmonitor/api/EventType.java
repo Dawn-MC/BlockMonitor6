@@ -1,4 +1,4 @@
-package com.dawnmcdevelop.blockmonitor.api;
+package com.dawndevelop.blockmonitor.api;
 
 /**
  * Created by johnfg10 on 04/06/2017.

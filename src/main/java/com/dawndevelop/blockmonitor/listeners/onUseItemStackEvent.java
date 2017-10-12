@@ -1,7 +1,7 @@
-package com.dawnmcdevelop.blockmonitor.listeners;
+package com.dawndevelop.blockmonitor.listeners;
 
-import com.dawnmcdevelop.blockmonitor.BlockMonitor;
-import com.dawnmcdevelop.blockmonitor.api.RecordBuilder;
+import com.dawndevelop.blockmonitor.api.RecordBuilder;
+import com.dawndevelop.blockmonitor.BlockMonitor;
 import org.spongepowered.api.event.item.inventory.UseItemStackEvent;
 
 /**

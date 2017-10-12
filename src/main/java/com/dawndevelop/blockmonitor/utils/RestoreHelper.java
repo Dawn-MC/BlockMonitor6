@@ -1,14 +1,11 @@
-package com.dawnmcdevelop.blockmonitor.utils;
+package com.dawndevelop.blockmonitor.utils;
 
-import com.dawnmcdevelop.blockmonitor.BlockMonitor;
-import com.dawnmcdevelop.blockmonitor.api.DataContainerHelper;
-import com.dawnmcdevelop.blockmonitor.api.EventType;
+import com.dawndevelop.blockmonitor.api.DataContainerHelper;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.BlockChangeFlag;
@@ -21,7 +18,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 
-import static com.dawnmcdevelop.blockmonitor.BlockMonitor.storageHandler;
+import static com.dawndevelop.blockmonitor.BlockMonitor.storageHandler;
 
 /**
  * Created by johnfg10 on 13/06/2017.

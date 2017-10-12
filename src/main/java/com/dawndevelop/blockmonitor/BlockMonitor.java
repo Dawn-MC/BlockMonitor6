@@ -1,9 +1,12 @@
-package com.dawnmcdevelop.blockmonitor;
+package com.dawndevelop.blockmonitor;
 
-
-import com.dawnmcdevelop.blockmonitor.Storage.StorageHandler;
-import com.dawnmcdevelop.blockmonitor.commands.onRestoreNear;
-import com.dawnmcdevelop.blockmonitor.commands.onSearchNear;
+import com.dawndevelop.blockmonitor.Storage.StorageHandler;
+import com.dawndevelop.blockmonitor.commands.onRestoreNear;
+import com.dawndevelop.blockmonitor.listeners.onChangeBlockEvent;
+import com.dawndevelop.blockmonitor.listeners.onClientConnectionEvent;
+import com.dawndevelop.blockmonitor.listeners.onInteractInventoryEvent;
+import com.dawndevelop.blockmonitor.listeners.onUseItemStackEvent;
+import com.dawndevelop.blockmonitor.commands.onSearchNear;
 import com.dawnmcdevelop.blockmonitor.listeners.*;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -100,6 +103,7 @@ public class BlockMonitor {
                 .permission("blockmonitor.restore.near")
                 .executor(new onRestoreNear())
                 .build();
+
         Sponge.getCommandManager().register(this, onRestoreNear, "restorenear", "restoren", "rn");
         //Listeners
         if (configNode.getNode("modules", "tracking", "connection").getBoolean(true))

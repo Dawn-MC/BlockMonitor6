@@ -1,6 +1,6 @@
-package com.dawnmcdevelop.blockmonitor.commands;
+package com.dawndevelop.blockmonitor.commands;
 
-import com.dawnmcdevelop.blockmonitor.utils.SearchHelper;
+import com.dawndevelop.blockmonitor.utils.SearchHelper;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;

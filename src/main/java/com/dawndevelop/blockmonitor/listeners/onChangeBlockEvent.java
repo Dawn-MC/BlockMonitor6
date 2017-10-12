@@ -1,11 +1,7 @@
-package com.dawnmcdevelop.blockmonitor.listeners;
+package com.dawndevelop.blockmonitor.listeners;
 
-import com.dawnmcdevelop.blockmonitor.BlockMonitor;
-import com.dawnmcdevelop.blockmonitor.api.Record;
-import com.dawnmcdevelop.blockmonitor.api.RecordBuilder;
-import org.spongepowered.api.block.BlockSnapshot;
-import org.spongepowered.api.data.Transaction;
-import org.spongepowered.api.event.EventListener;
+import com.dawndevelop.blockmonitor.api.RecordBuilder;
+import com.dawndevelop.blockmonitor.BlockMonitor;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 

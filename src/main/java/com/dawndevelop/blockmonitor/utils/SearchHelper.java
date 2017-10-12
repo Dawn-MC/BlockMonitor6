@@ -1,8 +1,6 @@
-package com.dawnmcdevelop.blockmonitor.utils;
+package com.dawndevelop.blockmonitor.utils;
 
-import com.dawnmcdevelop.blockmonitor.BlockMonitor;
-import com.dawnmcdevelop.blockmonitor.api.DataContainerHelper;
-import com.dawnmcdevelop.blockmonitor.api.EventType;
+import com.dawndevelop.blockmonitor.api.DataContainerHelper;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.DataContainer;
@@ -16,7 +14,6 @@ import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.TextElement;
 import org.spongepowered.api.text.TextTemplate;
-import org.spongepowered.api.text.TranslatableText;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -32,9 +29,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static com.dawndevelop.blockmonitor.BlockMonitor.storageHandler;
 import static org.spongepowered.api.text.TextTemplate.arg;
 import static org.spongepowered.api.text.TextTemplate.of;
-import static com.dawnmcdevelop.blockmonitor.BlockMonitor.storageHandler;
 /**
  * Created by johnfg10 on 08/06/2017.
  */

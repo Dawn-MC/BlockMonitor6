@@ -1,4 +1,4 @@
-package com.dawnmcdevelop.blockmonitor.api;
+package com.dawndevelop.blockmonitor.api;
 
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.persistence.DataFormat;
