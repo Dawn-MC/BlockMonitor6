@@ -46,11 +46,10 @@ compileKotlin {
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
-/*
+
 shadowJar {
-    dependencies {
-        exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"))
-        exclude(dependency("org.jetbrains.kotlin:kotlin-runtime:$kotlin_version"))
-        exclude(dependency("org.jetbrains.kotlin:kotlin-runtime:$kotlin_version"))
-    }
-}*/
+    baseName = "KotlinCore"
+    version = "$kotlin_version"
+    classifier = null
+    appendix = null
+}
