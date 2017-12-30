@@ -1,0 +1,6 @@
+rootProject.name = 'BlockMonitorKotlin'
+include 'BlockMonitorApi'
+include 'BlockMonitorCore'
+include 'KotlinCore'
+include 'KotlinCore'
+

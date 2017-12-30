@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Class-Path: spongeapi-6.0.0.jar slf4j-api-1.7.22.jar guice-4.0.jar plu
+ gin-meta-0.4.1.jar configurate-hocon-3.2.jar configurate-gson-3.2.jar
+  configurate-yaml-3.2.jar configurate-core-3.2.jar guava-17.0.jar gso
+ n-2.2.4.jar commons-lang3-3.3.2.jar jsr305-1.3.9.jar guava-2.3.5.jar 
+ caffeine-2.3.5.jar flow-math-1.0.3.jar flow-noise-1.0.1-SNAPSHOT.jar 
+ asm-5.0.3.jar javax.inject-1.jar aopalliance-1.0.jar config-1.3.0.jar
+  snakeyaml-1.16.jar
+
