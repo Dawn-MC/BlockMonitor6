@@ -49,5 +49,7 @@ compileTestKotlin {
 }
 
 shadowJar {
-
+    baseName = "BlockMonitorApi"
+    version = "1.0.0"
+    classifier = null
 }
