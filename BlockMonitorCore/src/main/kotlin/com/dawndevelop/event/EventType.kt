@@ -4,14 +4,10 @@ import java.util.*
 
 enum class EventType {
     ClientConnectionJoin,
-    ClientConnectionDisconnect;
-
-    fun toEvent(eventType: EventType): Optional<Event> {
-        when(eventType){
-            ClientConnectionJoin -> {}
-            ClientConnectionDisconnect -> {}
-        }
-
-        return Optional.empty()
-    }
+    ClientConnectionDisconnect,
+    ChangeBlockBreak,
+    ChangeBlockPlace,
+    ChangeBlockModify,
+    ChangeBlockGrow,
+    ChangeBlockDecay
 }
