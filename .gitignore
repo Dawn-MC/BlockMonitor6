@@ -31,3 +31,4 @@ build/**
 
 BlockMonitor\.iml
 gradle.properties
+*.bin
