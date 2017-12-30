@@ -23,6 +23,8 @@ hs_err_pid*
 
 run/*
 build/*
+/build/*
+*/build/*
 .idea/*
 .gradle/*
 
