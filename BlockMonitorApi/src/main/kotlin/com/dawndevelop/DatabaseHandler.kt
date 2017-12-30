@@ -158,14 +158,18 @@ public class DatabaseHandler (url: String, driver: String) {
         Database.connect(url, driver)
         val events: MutableList<Event> = mutableListOf()
         transaction {
+            if (BlockMonitorApi.debugMode){
+                logger.addLogger(StdOutSqlLogger)
+            }
+
             for(dbEvent in DatabaseEvent.selectAll()){
                 val event: Event = Event()
-
+                println("event found id: ${dbEvent[DatabaseEvent.id]}")
                 event.ID = dbEvent[DatabaseEvent.id]
                 event.Type = dbEvent[DatabaseEvent.type]
                 event.Date = ToJavaDate(dbEvent[DatabaseEvent.date])
                 event.DataContainer = DataFormats.JSON.read(dbEvent[DatabaseEvent.dataContainer])
-                if(dbEvent[DatabaseEvent.worldId] == "null"){
+                if(dbEvent[DatabaseEvent.worldId] != "null"){
                     BlockMonitorApi.staticLogger?.debug(dbEvent[DatabaseEvent.worldId])
                     if (Sponge.getServer().getWorld(UUID.fromString(dbEvent[DatabaseEvent.worldId])).isPresent)
                         event.Location = Location<World>(Sponge.getServer().getWorld(UUID.fromString(dbEvent[DatabaseEvent.worldId])).get(), dbEvent[DatabaseEvent.locationX], dbEvent[DatabaseEvent.locationY], dbEvent[DatabaseEvent.locationZ])
@@ -174,6 +178,8 @@ public class DatabaseHandler (url: String, driver: String) {
                 }
                 else
                     event.Location = null
+
+                events.add(event)
 
             }
         }

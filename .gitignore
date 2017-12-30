@@ -28,6 +28,8 @@ build/*
 .idea/*
 .gradle/*
 build/**
+BlockMonitorApi\build\**
+BlockMonitorCore\build\**
 
 BlockMonitor\.iml
 gradle.properties
