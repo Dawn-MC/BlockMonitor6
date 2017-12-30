@@ -8,19 +8,19 @@ import org.spongepowered.api.data.DataContainer
 
 object DatabaseEvent : Table() {
 
-    var id: Column<Long> = long("id").default(0).primaryKey().uniqueIndex().autoIncrement()
+    var id: Column<Long> = long("id").default(0).primaryKey().uniqueIndex()
 
-    var type: Column<String> = varchar("eventType", 50)
+    var type: Column<String> = varchar("eventType", 50).default("Unknown")
 
-    val date: Column<DateTime> = date("eventDate")
+    val date: Column<DateTime> = date("eventDate").default(DateTime.now())
 
-    val dataContainer: Column<String> = text("eventDataContainer")
+    val dataContainer: Column<String> = text("eventDataContainer").default("{}")
 
-    val locationX: Column<Int> = integer("eventLocationX")
+    val locationX: Column<Int> = integer("eventLocationX").default(0)
 
-    val locationY: Column<Int> = integer("eventLocationY")
+    val locationY: Column<Int> = integer("eventLocationY").default(0)
 
-    val locationZ: Column<Int> = integer("eventLocationZ")
+    val locationZ: Column<Int> = integer("eventLocationZ").default(0)
 
-    val worldId: Column<String> = text("eventLocationWorldId")
+    val worldId: Column<String> = text("eventLocationWorldId").default("Unknown")
 }

@@ -4,6 +4,7 @@ import com.dawndevelop.event.DatabaseEvent
 import com.dawndevelop.event.DatabaseEvent.locationX
 import com.dawndevelop.event.DatabaseEvent.locationY
 import com.dawndevelop.event.DatabaseEvent.locationZ
+import com.dawndevelop.event.DatabaseEvent.long
 import com.dawndevelop.event.DatabaseEvent.worldId
 import com.dawndevelop.event.Event
 import org.jetbrains.exposed.sql.*
@@ -16,31 +17,26 @@ import org.spongepowered.api.data.persistence.DataFormats
 import org.spongepowered.api.world.Location
 import org.spongepowered.api.world.World
 import java.sql.ResultSet
+import java.time.Instant
 import java.util.*
 import java.util.Date
 
-class DatabaseHandler (url: String, driver: String) {
+public class DatabaseHandler (url: String, driver: String) {
 
-    init {
-        connectToDatabase(url, driver)
-    }
-
-    lateinit var url: String
-    lateinit var driver: String
-
-    lateinit var database: Database
+    val url: String = url
+    val driver: String = driver
 
     var isReady: Boolean = false
 
-    private fun connectToDatabase(url1: String, driver1: String){
-        url = url1
-        driver = driver1
+    init {
+        BlockMonitorApi.staticLogger?.info("URL: $url\n Driver: $driver")
 
-        database = Database.connect(url, driver)
+        Database.connect(url, driver)
 
         transaction {
-            logger.addLogger(StdOutSqlLogger)
-
+            if (BlockMonitorApi.debugMode){
+                logger.addLogger(StdOutSqlLogger)
+            }
             create(DatabaseEvent)
         }
 
@@ -49,32 +45,53 @@ class DatabaseHandler (url: String, driver: String) {
 
     fun Insert(event: Event) {
 
-        Database.connect(url, driver)
+        if (BlockMonitorApi.debugMode){
+            BlockMonitorApi.staticLogger?.debug("A insert event has been called. Type: ${event.Type}\nID: ${event.ID}")
+            if (event.Location == null){
+                BlockMonitorApi.staticLogger?.debug("Location was null")
+            }
+        }
 
+
+
+        //Database.connect(url, driver)
+        Database.connect(url, driver)
         transaction {
-            logger.addLogger(Slf4jSqlLogger)
+            if (BlockMonitorApi.debugMode){
+                logger.addLogger(StdOutSqlLogger)
+            }
 
             DatabaseEvent.insert {
                 it[id] = event.ID
                 it[type] = event.Type
                 it[date] = ToJodaTime(event.Date)
                 it[dataContainer] = DataFormats.JSON.write(event.DataContainer)
-                it[locationX] = event.Location.blockX
-                it[locationY] = event.Location.blockY
-                it[locationZ] = event.Location.blockZ
-                it[worldId] = event.Location.extent.uniqueId.toString()
+                it[locationX] = event.Location?.blockX ?: 0
+                it[locationY] = event.Location?.blockY ?: 0
+                it[locationZ] = event.Location?.blockZ ?: 0
+                it[worldId] = event.Location?.extent?.uniqueId.toString() ?: "Unknown"
             }
         }
     }
 
     fun Delete(id: Long){
-        DatabaseEvent.deleteWhere {
-            DatabaseEvent.id eq id
+        Database.connect(url, driver)
+        transaction {
+            if (BlockMonitorApi.debugMode){
+                logger.addLogger(StdOutSqlLogger)
+            }
+            DatabaseEvent.deleteWhere {
+                DatabaseEvent.id eq id
+            }
         }
     }
 
     fun DeleteAll(){
-        DatabaseEvent.deleteAll()
+        Database.connect(url, driver)
+
+        transaction {
+            DatabaseEvent.deleteAll()
+        }
     }
 
     /**
@@ -91,10 +108,16 @@ class DatabaseHandler (url: String, driver: String) {
             }
         }
 
+        Database.connect(url, driver)
 
-        DatabaseEvent.deleteWhere {
-            DatabaseEvent.date lessEq ToJodaTime(date) or
-                    DatabaseEvent.worldId.notInList(worldIds)
+        transaction {
+            if (BlockMonitorApi.debugMode){
+                logger.addLogger(StdOutSqlLogger)
+            }
+            DatabaseEvent.deleteWhere {
+                DatabaseEvent.date lessEq ToJodaTime(date) or
+                        DatabaseEvent.worldId.notInList(worldIds)
+            }
         }
     }
 
@@ -110,39 +133,78 @@ class DatabaseHandler (url: String, driver: String) {
         val startZ: Int = centerLocation.blockZ - radiusZ
         val endZ: Int = centerLocation.blockZ + radiusZ
 
-        return SelectInArea(startX, endX, startY, endY, startZ, endZ, centerLocation.extent.uniqueId.timestamp())
+        Database.connect(url, driver)
+
+        return transaction {
+            if (BlockMonitorApi.debugMode){
+                logger.addLogger(StdOutSqlLogger)
+            }
+            SelectInArea(startX, endX, startY, endY, startZ, endZ, centerLocation.extent.uniqueId.timestamp())
+        }
     }
 
     fun SelectInArea(startX: Int, endX: Int, startY: Int, endY: Int, startZ: Int, endZ: Int, worldID: Long) : ResultSet? {
+        Database.connect(url, driver)
+
         return DatabaseEvent.select{
             ((locationX greaterEq startX) and (locationX lessEq endX)) and
                     ((locationY greaterEq startY) and (locationY lessEq endY)) and
                     ((locationZ greaterEq startZ) and (locationZ lessEq endZ)) and
                     (worldId eq worldID)
-        }.execute(TransactionManager.currentOrNew(1))
+            }.execute(TransactionManager.currentOrNew(1))
     }
 
-    fun ToDatabaseEvent(resultSet: ResultSet?) : Optional<List<Event>> {
+    public fun SelectAll(): List<Event> {
+        Database.connect(url, driver)
+        val events: MutableList<Event> = mutableListOf()
+        transaction {
+            for(dbEvent in DatabaseEvent.selectAll()){
+                val event: Event = Event()
+
+                event.ID = dbEvent[DatabaseEvent.id]
+                event.Type = dbEvent[DatabaseEvent.type]
+                event.Date = ToJavaDate(dbEvent[DatabaseEvent.date])
+                event.DataContainer = DataFormats.JSON.read(dbEvent[DatabaseEvent.dataContainer])
+                if(dbEvent[DatabaseEvent.worldId] == "null"){
+                    BlockMonitorApi.staticLogger?.debug(dbEvent[DatabaseEvent.worldId])
+                    if (Sponge.getServer().getWorld(UUID.fromString(dbEvent[DatabaseEvent.worldId])).isPresent)
+                        event.Location = Location<World>(Sponge.getServer().getWorld(UUID.fromString(dbEvent[DatabaseEvent.worldId])).get(), dbEvent[DatabaseEvent.locationX], dbEvent[DatabaseEvent.locationY], dbEvent[DatabaseEvent.locationZ])
+                    else
+                        event.Location = null
+                }
+                else
+                    event.Location = null
+
+            }
+        }
+        return events.toList()
+    }
+
+    fun ToDatabaseEvents(resultSet: ResultSet?) : Optional<List<Event>> {
         if(resultSet != null){
             val events: List<Event> = emptyList()
 
             while (resultSet.next()){
-                var event: Event = Event()
+                val event: Event = Event()
                 event.ID = resultSet.getLong("id")
                 event.DataContainer = DataFormats.JSON.read(resultSet.getString("eventDataContainer"))
                 event.Date = resultSet.getDate("eventDate")
                 event.Type = resultSet.getString("eventType")
 
-                val world = Sponge.getServer().getWorld(UUID.fromString(resultSet.getString("eventLocationWorldId")))
+                if (!resultSet.getString("eventLocationWorldId").equals("Unknown", true)){
+                    val world = Sponge.getServer().getWorld(UUID.fromString(resultSet.getString("eventLocationWorldId")))
 
-                if (world.isPresent){
-                    event.Location = Location<World>(world.get(), resultSet.getInt("eventLocationX"), resultSet.getInt("eventLocationY"), resultSet.getInt("eventLocationZ"))
-                }else{
-                    System.err.println("World could not be found this record will be ignored! Might be advisable running a clearance on the data set")
-                    return Optional.empty()
+                    if (world.isPresent){
+                        event.Location = Location<World>(world.get(), resultSet.getInt("eventLocationX"), resultSet.getInt("eventLocationY"), resultSet.getInt("eventLocationZ"))
+                    }else{
+                        event.Location = null
+                    }
                 }
+
             }
 
+            if (events.isEmpty())
+                return Optional.empty()
             return Optional.of(events)
         }else{
             return Optional.empty()
@@ -150,6 +212,10 @@ class DatabaseHandler (url: String, driver: String) {
     }
 
     fun ToJodaTime(date: Date): DateTime {
-        return DateTime(date)
+        return DateTime(org.joda.time.Instant(date.toInstant().toEpochMilli()))
+    }
+
+    fun ToJavaDate(dateTime: DateTime): Date{
+        return Date.from(Instant.ofEpochMilli(dateTime.millis))
     }
 }

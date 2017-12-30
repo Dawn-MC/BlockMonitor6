@@ -8,11 +8,7 @@ import java.time.Instant
 import java.util.*
 
 open class Event {
-    init {
-        this.setup()
-    }
-
-    open fun setup(){
+    constructor(){
         this.ID = BlockMonitorApi.snowflake.next()
         this.Date = java.util.Date.from(Instant.now())
     }
@@ -22,24 +18,13 @@ open class Event {
         this.Date = date
     }
 
-    var ID: Long
+    var ID: Long = BlockMonitorApi.snowflake.next()
 
-    lateinit var Location: Location<World>
+    var Location: Location<World>? = null
 
-    var Date: Date
+    var Date: Date = java.util.Date.from(Instant.now())
 
-    var Type: String = "Uknown"
+    var Type: String = "Unknown"
 
-    lateinit var DataContainer: DataContainer
-
-    init {
-        this.ID = BlockMonitorApi.snowflake.next()
-        this.Date = java.util.Date.from(Instant.now())
-
-
-    }
-
-    constructor(){
-        this.setup()
-    }
+    var DataContainer: DataContainer = org.spongepowered.api.data.DataContainer.createNew()
 }
