@@ -27,6 +27,7 @@ build/*
 */build/*
 .idea/*
 .gradle/*
+build/**
 
 BlockMonitor\.iml
 gradle.properties
