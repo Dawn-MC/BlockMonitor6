@@ -7,6 +7,7 @@ import org.spongepowered.api.text.TextTemplate
 import org.spongepowered.api.text.TextTemplate.arg
 import org.spongepowered.api.text.TextTemplate.of
 import org.spongepowered.api.text.format.TextColors
+import org.spongepowered.api.world.World
 
 class TextRenderer() {
 
@@ -35,10 +36,16 @@ class TextRenderer() {
             textBuilder.append(idTemplate.apply(mapOf(Pair("eventId", event.ID))).build())
             textBuilder.append(eventTypeTemplate.apply(mapOf(Pair("eventType", event.Type))).build())
             textBuilder.append(Text.NEW_LINE)
+
+            var worldName: String = event.Location?.extent?.uniqueId.toString() ?: "Unknown"
+            if (event.Location?.extent is World){
+                worldName = (event.Location?.extent as World).name
+            }
+
             textBuilder.append(locationTemplate.apply(mapOf(Pair("locX", event.Location?.blockX),
                     Pair("locY", event.Location?.blockY),
                     Pair("locZ", event.Location?.blockZ),
-                    Pair("locWorld", event.Location?.extent?.name))
+                    Pair("locWorld", worldName))
             ).build())
             textBuilder.append(Text.NEW_LINE)
 

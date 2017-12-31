@@ -9,8 +9,6 @@ import java.util.*
 
 open class Event {
     constructor(){
-        this.ID = BlockMonitorApi.snowflake.next()
-        this.Date = java.util.Date.from(Instant.now())
     }
 
     constructor(id: Long, date: Date){
@@ -20,7 +18,7 @@ open class Event {
 
     var ID: Long = BlockMonitorApi.snowflake.next()
 
-    var Location: Location<World>? = null
+    var Location: Location<*>? = null
 
     var Date: Date = java.util.Date.from(Instant.now())
 

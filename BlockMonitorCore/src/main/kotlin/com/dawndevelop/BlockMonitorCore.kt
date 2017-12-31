@@ -2,6 +2,7 @@ package com.dawndevelop
 
 import com.dawndevelop.event.EventChangeBlock
 import com.dawndevelop.event.EventClientConnection
+import com.dawndevelop.event.Eventt
 import com.dawndevelop.helpers.TextRenderer
 import com.google.inject.Inject
 import org.slf4j.Logger
@@ -14,6 +15,7 @@ import org.spongepowered.api.entity.living.player.Player
 import org.spongepowered.api.event.Listener
 import org.spongepowered.api.event.block.ChangeBlockEvent
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent
+import org.spongepowered.api.event.item.inventory.DropItemEvent
 import org.spongepowered.api.event.network.ClientConnectionEvent
 import org.spongepowered.api.plugin.Dependency
 import org.spongepowered.api.plugin.Plugin
@@ -89,45 +91,24 @@ class BlockMonitorCore {
     @Listener
     fun ClientConnectionEvent(event: ClientConnectionEvent){
         BlockMonitorCore.Companion.staticLogger = logger
-
         if(!BlockMonitorApi.databaseHandler.isReady){
             logger.error("database handler hasn't been initialized")
         }
 
         if (event is ClientConnectionEvent.Join){
-            BlockMonitorApi.databaseHandler.Insert(EventClientConnection.Join(event.message, event.targetEntity))
+            val eventt: Eventt = Eventt(event.cause, event, listOf(event.message))
         }else if(event is ClientConnectionEvent.Disconnect){
-            BlockMonitorApi.databaseHandler.Insert(EventClientConnection.Disconnect(event.targetEntity))
+            val eventt: Eventt = Eventt(event.cause, event, listOf())
         }
     }
 
     @Listener
     fun breakBlockEvent(event: ChangeBlockEvent){
-        when(event){
-            is ChangeBlockEvent.Break -> {
-                val breakEvent: ChangeBlockEvent.Break = event
-                BlockMonitorApi.databaseHandler.Insert(EventChangeBlock.Break(breakEvent.transactions, breakEvent.cause.first(Entity::class.java)))
-            }
+        val eventt: Eventt = Eventt(event.cause, event, listOf(event.transactions))
+    }
 
-            is ChangeBlockEvent.Place -> {
-                var placeEvent: ChangeBlockEvent.Place = event
-                BlockMonitorApi.databaseHandler.Insert(EventChangeBlock.Place(placeEvent.transactions, placeEvent.cause.first(Entity::class.java)))
-            }
+    @Listener
+    fun dropEvent(event: DropItemEvent){
 
-            is ChangeBlockEvent.Modify -> {
-               var modifyEvent: ChangeBlockEvent.Modify = event
-                BlockMonitorApi.databaseHandler.Insert(EventChangeBlock.Modify(modifyEvent.transactions, modifyEvent.cause.first(Entity::class.java)))
-            }
-
-            is ChangeBlockEvent.Decay -> {
-                var decayEvent: ChangeBlockEvent.Decay = event
-                BlockMonitorApi.databaseHandler.Insert(EventChangeBlock.Decay(decayEvent.transactions, decayEvent.cause.first(Entity::class.java)))
-            }
-
-            is ChangeBlockEvent.Grow -> {
-                var growEvent: ChangeBlockEvent.Grow = event
-                BlockMonitorApi.databaseHandler.Insert(EventChangeBlock.Grow(growEvent.transactions, growEvent.cause.first(Entity::class.java)))
-            }
-        }
     }
 }
