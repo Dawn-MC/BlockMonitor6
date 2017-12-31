@@ -70,19 +70,14 @@ class DatacontainerHelper {
         fun getBlockTransactions (dataContainer: DataContainer) :  Optional<List<Transaction<BlockSnapshot>>>{
 
             if (containsBlockTransactions(dataContainer)){
-                BlockMonitorCore.staticLogger.info("block transactions found")
                 val transactionBlocks = mutableListOf<Transaction<BlockSnapshot>>()
                 val viewList = dataContainer.getViewList(DataQuery.of("BlockTransactions"))
                 if (viewList.isPresent){
-                    BlockMonitorCore.staticLogger.info("view list was present")
                     for (view in  viewList.get()){
-                        BlockMonitorCore.staticLogger.info("running a view")
                         if (view.contains(DataQuery.of("Original")) && view.contains(DataQuery.of("Final"))) {
-                            BlockMonitorCore.staticLogger.info("View contained both original and final data querys")
                             val originalOpt = Sponge.getDataManager().deserialize(BlockSnapshot::class.java, view.getView(DataQuery.of("Original")).get())
                             val finalOpt = Sponge.getDataManager().deserialize(BlockSnapshot::class.java, view.getView(DataQuery.of("Final")).get())
                             if (originalOpt.isPresent && finalOpt.isPresent){
-                                BlockMonitorCore.staticLogger.info("Loaded final and original opts into the original class")
                                 transactionBlocks.add(Transaction(originalOpt.get(), finalOpt.get()))
                             }
                         }
@@ -90,38 +85,6 @@ class DatacontainerHelper {
                 }
                 return Optional.of(transactionBlocks.toList())
             }
-
-            /*
-            if (dataContainer.contains(DataQuery.of("BlockTransactions"))) {
-                var idOpt = dataContainer.getInt(DataQuery.of("maxId"))
-                val transactions: MutableList<Transaction<BlockSnapshot>> = mutableListOf()
-                if (idOpt.isPresent){
-                    var id = idOpt.get()
-                    while (id >= 0){
-                        val transactionOrignalOpt = dataContainer.getView(DataQuery.of("BlockTransactions", id.toString(), "Original"))
-                        val transactionFinalOpt = dataContainer.getView(DataQuery.of("BlockTransactions", id.toString(), "Final"))
-                        if (transactionOrignalOpt.isPresent && transactionFinalOpt.isPresent){
-                            BlockMonitorCore.staticLogger.info("transaction views found")
-
-                            val transOrginalCont = transactionOrignalOpt.get()
-                            val transFinalCont = transactionFinalOpt.get()
-                            val transOriginal = Sponge.getDataManager().deserialize(BlockSnapshot::class.java, transOrginalCont)
-                            val transFinal = Sponge.getDataManager().deserialize(BlockSnapshot::class.java, transFinalCont)
-
-                            if (transOriginal.isPresent && transFinal.isPresent){
-                                BlockMonitorCore.staticLogger.info("transaction creation in progress")
-                                transactions.add(Transaction(transOriginal.get(), transFinal.get()))
-                            }
-
-                        }
-                        id--
-                    }
-
-                    return Optional.of(transactions.toList())
-                }
-                return Optional.empty()
-            }
-            */
 
             return Optional.empty()
         }

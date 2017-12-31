@@ -65,7 +65,6 @@ class TextRenderer() {
                 if (blockTransactionsOpt.isPresent){
                     BlockMonitorCore.staticLogger.info("blocktransactions found")
                     val blockTransactions = blockTransactionsOpt.get()
-                    BlockMonitorCore.staticLogger.info("block transaction count: " + blockTransactions.size)
                     for (blockTransaction in blockTransactions){
                         BlockMonitorCore.staticLogger.info("blocktransaction found!: 1")
                         textBuilder.append(transactionTemplate.apply(mapOf(Pair("originalTransaction", blockSnapshotTemplate.apply().build()), Pair("finalTransaction", blockSnapshotTemplate.apply().build())) ).build())
@@ -76,7 +75,6 @@ class TextRenderer() {
             if (DatacontainerHelper.containsItemStackTransactions(event.DataContainer)){
                 val itemStackTransactionsOpt = DatacontainerHelper.getItemStackTransactions(event.DataContainer)
                 if (itemStackTransactionsOpt.isPresent){
-                    BlockMonitorCore.staticLogger.info("itemtransactions found")
                     val itemStackTransactions = itemStackTransactionsOpt.get()
                     for (itemStackTransaction in itemStackTransactions){
                         textBuilder.append(transactionTemplate.apply(mapOf(Pair("originalTransaction", itemSnapshotTemplate.apply().build()), Pair("finalTransaction", blockSnapshotTemplate.apply().build())) ).build())
