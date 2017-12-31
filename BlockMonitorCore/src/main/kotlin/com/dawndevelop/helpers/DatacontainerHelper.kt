@@ -1,10 +1,12 @@
 package com.dawndevelop.helpers
 
+import com.dawndevelop.BlockMonitorCore
 import jdk.nashorn.internal.ir.Block
 import org.spongepowered.api.Sponge
 import org.spongepowered.api.block.BlockSnapshot
 import org.spongepowered.api.data.DataContainer
 import org.spongepowered.api.data.DataQuery
+import org.spongepowered.api.data.DataView
 import org.spongepowered.api.data.Transaction
 import org.spongepowered.api.entity.Entity
 import org.spongepowered.api.entity.living.player.Player
@@ -51,6 +53,81 @@ class DatacontainerHelper {
         }
 
         fun setBlockTransactions (dataContainer: DataContainer, transactionList :List<Transaction<BlockSnapshot>>) : DataContainer {
+            var dataViews: MutableList<DataView> = mutableListOf()
+            for ((id, transaction) in transactionList.withIndex()){
+                var dataCon: DataContainer = DataContainer.createNew()
+                dataCon.set(DataQuery.of( "Original"), transaction.original.toContainer()).set(DataQuery.of("Final"), transaction.final.toContainer())
+                dataViews.add(dataCon)
+            }
+            dataContainer.set(DataQuery.of("BlockTransactions"), dataViews)
+            return dataContainer
+        }
+
+        fun containsBlockTransactions(dataContainer: DataContainer) : Boolean {
+            return dataContainer.contains(DataQuery.of("BlockTransactions"))
+        }
+
+        fun getBlockTransactions (dataContainer: DataContainer) :  Optional<List<Transaction<BlockSnapshot>>>{
+
+            if (containsBlockTransactions(dataContainer)){
+                BlockMonitorCore.staticLogger.info("block transactions found")
+                val transactionBlocks = mutableListOf<Transaction<BlockSnapshot>>()
+                val viewList = dataContainer.getViewList(DataQuery.of("BlockTransactions"))
+                if (viewList.isPresent){
+                    BlockMonitorCore.staticLogger.info("view list was present")
+                    for (view in  viewList.get()){
+                        BlockMonitorCore.staticLogger.info("running a view")
+                        if (view.contains(DataQuery.of("Original")) && view.contains(DataQuery.of("Final"))) {
+                            BlockMonitorCore.staticLogger.info("View contained both original and final data querys")
+                            val originalOpt = Sponge.getDataManager().deserialize(BlockSnapshot::class.java, view.getView(DataQuery.of("Original")).get())
+                            val finalOpt = Sponge.getDataManager().deserialize(BlockSnapshot::class.java, view.getView(DataQuery.of("Final")).get())
+                            if (originalOpt.isPresent && finalOpt.isPresent){
+                                BlockMonitorCore.staticLogger.info("Loaded final and original opts into the original class")
+                                transactionBlocks.add(Transaction(originalOpt.get(), finalOpt.get()))
+                            }
+                        }
+                    }
+                }
+                return Optional.of(transactionBlocks.toList())
+            }
+
+            /*
+            if (dataContainer.contains(DataQuery.of("BlockTransactions"))) {
+                var idOpt = dataContainer.getInt(DataQuery.of("maxId"))
+                val transactions: MutableList<Transaction<BlockSnapshot>> = mutableListOf()
+                if (idOpt.isPresent){
+                    var id = idOpt.get()
+                    while (id >= 0){
+                        val transactionOrignalOpt = dataContainer.getView(DataQuery.of("BlockTransactions", id.toString(), "Original"))
+                        val transactionFinalOpt = dataContainer.getView(DataQuery.of("BlockTransactions", id.toString(), "Final"))
+                        if (transactionOrignalOpt.isPresent && transactionFinalOpt.isPresent){
+                            BlockMonitorCore.staticLogger.info("transaction views found")
+
+                            val transOrginalCont = transactionOrignalOpt.get()
+                            val transFinalCont = transactionFinalOpt.get()
+                            val transOriginal = Sponge.getDataManager().deserialize(BlockSnapshot::class.java, transOrginalCont)
+                            val transFinal = Sponge.getDataManager().deserialize(BlockSnapshot::class.java, transFinalCont)
+
+                            if (transOriginal.isPresent && transFinal.isPresent){
+                                BlockMonitorCore.staticLogger.info("transaction creation in progress")
+                                transactions.add(Transaction(transOriginal.get(), transFinal.get()))
+                            }
+
+                        }
+                        id--
+                    }
+
+                    return Optional.of(transactions.toList())
+                }
+                return Optional.empty()
+            }
+            */
+
+            return Optional.empty()
+        }
+
+        /*
+        fun setBlockTransactions (dataContainer: DataContainer, transactionList :List<Transaction<BlockSnapshot>>) : DataContainer {
             for ((id, transaction) in transactionList.withIndex()){
                 dataContainer.set(DataQuery.of("BlockTransactions", id.toString()), transaction.toContainer())
                 dataContainer.set(DataQuery.of("BlockTransactions", "maxId"), id)
@@ -73,8 +150,10 @@ class DatacontainerHelper {
                         if (dataView.isPresent){
                             val blockTransactionOpt = Sponge.getDataManager().deserialize(Transaction::class.java, dataView.get())
                             if (blockTransactionOpt.isPresent){
-                                if (blockTransactionOpt.get().default is BlockSnapshot){
-                                    blockTransactions.add(blockTransactionOpt.get() as Transaction<BlockSnapshot>)
+                                if (blockTransactionOpt.get().default is BlockSnapshot && blockTransactionOpt.get().final is BlockSnapshot){
+                                    BlockMonitorCore.staticLogger.info("Blocksnapshot transaction found")
+                                    val blockTransaction1 = Transaction<BlockSnapshot>(blockTransactionOpt.get().default as BlockSnapshot, blockTransactionOpt.get().final as BlockSnapshot)
+                                    blockTransactions.add(blockTransaction1)
                                 }
                             }
                         }
@@ -88,7 +167,7 @@ class DatacontainerHelper {
 
             return Optional.empty()
         }
-
+*/
 
         fun setItemStackTransactions (dataContainer: DataContainer, transactionList :List<Transaction<ItemStackSnapshot>>) : DataContainer {
             for ((id, transaction) in transactionList.withIndex()){

@@ -2,7 +2,7 @@ package com.dawndevelop
 
 import com.dawndevelop.event.EventChangeBlock
 import com.dawndevelop.event.EventClientConnection
-import com.dawndevelop.event.TextRenderer
+import com.dawndevelop.helpers.TextRenderer
 import com.google.inject.Inject
 import org.slf4j.Logger
 import org.spongepowered.api.Game

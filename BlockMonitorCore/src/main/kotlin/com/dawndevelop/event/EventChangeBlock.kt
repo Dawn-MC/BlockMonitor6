@@ -1,6 +1,7 @@
 package com.dawndevelop.event
 
 import com.dawndevelop.BlockMonitorCore
+import com.dawndevelop.helpers.DatacontainerHelper
 import org.spongepowered.api.block.BlockSnapshot
 import org.spongepowered.api.data.DataQuery
 import org.spongepowered.api.data.Transaction
@@ -14,14 +15,13 @@ open class EventChangeBlock(_transactions: List<Transaction<BlockSnapshot>>, _en
     private val entity: Entity?
 
     init {
-        for ((transactionNumber, transaction) in transactions.withIndex()){
-            this.DataContainer.set(DataQuery.of("blockTransactions_", transactionNumber.toString()), transaction.toContainer())
-        }
+        this.DataContainer = DatacontainerHelper.setBlockTransactions(this.DataContainer,transactions)
 
         if (_entityCause.isPresent){
             entity = _entityCause.get()
             this.Location = entity.location
-            this.DataContainer.set(DataQuery.of("Entity"), entity.toContainer())
+
+            this.DataContainer = DatacontainerHelper.setEntity(this.DataContainer, entity)
         }else{
 
             if (transactions.first().default.location.isPresent) {
