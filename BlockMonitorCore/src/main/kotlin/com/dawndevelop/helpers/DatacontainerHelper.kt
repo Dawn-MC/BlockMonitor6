@@ -89,82 +89,40 @@ class DatacontainerHelper {
             return Optional.empty()
         }
 
-        /*
-        fun setBlockTransactions (dataContainer: DataContainer, transactionList :List<Transaction<BlockSnapshot>>) : DataContainer {
+        fun setItemStackSnapshotTransactions (dataContainer: DataContainer, transactionList :List<Transaction<ItemStackSnapshot>>) : DataContainer {
+            var dataViews: MutableList<DataView> = mutableListOf()
             for ((id, transaction) in transactionList.withIndex()){
-                dataContainer.set(DataQuery.of("BlockTransactions", id.toString()), transaction.toContainer())
-                dataContainer.set(DataQuery.of("BlockTransactions", "maxId"), id)
+                var dataCon: DataContainer = DataContainer.createNew()
+                dataCon.set(DataQuery.of( "Original"), transaction.original.toContainer()).set(DataQuery.of("Final"), transaction.final.toContainer())
+                dataViews.add(dataCon)
             }
+            dataContainer.set(DataQuery.of("ItemStackSnapshots"), dataViews)
             return dataContainer
         }
 
-        fun containsBlockTransactions(dataContainer: DataContainer) : Boolean {
-            return dataContainer.contains(DataQuery.of("BlockTransactions"))
+        fun containsItemStackSnapshotTransactions(dataContainer: DataContainer) : Boolean {
+            return dataContainer.contains(DataQuery.of("ItemStackSnapshots"))
         }
 
-        fun getBlockTransactions (dataContainer: DataContainer) : Optional<List<Transaction<BlockSnapshot>>> {
-            if (dataContainer.contains(DataQuery.of("BlockTransactions"))){
-                val maxIdOpt = dataContainer.getInt(DataQuery.of("BlockTransactions", "maxId"))
-                if (maxIdOpt.isPresent){
-                    var maxId = maxIdOpt.get()
-                    val blockTransactions: MutableList<Transaction<BlockSnapshot>> = mutableListOf()
-                    while (maxId >= 0){
-                        val dataView = dataContainer.getView(DataQuery.of("BlockTransactions", maxId.toString()))
-                        if (dataView.isPresent){
-                            val blockTransactionOpt = Sponge.getDataManager().deserialize(Transaction::class.java, dataView.get())
-                            if (blockTransactionOpt.isPresent){
-                                if (blockTransactionOpt.get().default is BlockSnapshot && blockTransactionOpt.get().final is BlockSnapshot){
-                                    BlockMonitorCore.staticLogger.info("Blocksnapshot transaction found")
-                                    val blockTransaction1 = Transaction<BlockSnapshot>(blockTransactionOpt.get().default as BlockSnapshot, blockTransactionOpt.get().final as BlockSnapshot)
-                                    blockTransactions.add(blockTransaction1)
-                                }
+        fun getItemStackSnapshotTransactions (dataContainer: DataContainer) :  Optional<List<Transaction<ItemStackSnapshot>>>{
+
+            if (containsBlockTransactions(dataContainer)){
+                val transactionBlocks = mutableListOf<Transaction<ItemStackSnapshot>>()
+                val viewList = dataContainer.getViewList(DataQuery.of("ItemStackSnapshots"))
+                if (viewList.isPresent){
+                    for (view in  viewList.get()){
+                        if (view.contains(DataQuery.of("Original")) && view.contains(DataQuery.of("Final"))) {
+                            val originalOpt = Sponge.getDataManager().deserialize(ItemStackSnapshot::class.java, view.getView(DataQuery.of("Original")).get())
+                            val finalOpt = Sponge.getDataManager().deserialize(ItemStackSnapshot::class.java, view.getView(DataQuery.of("Final")).get())
+                            if (originalOpt.isPresent && finalOpt.isPresent){
+                                transactionBlocks.add(Transaction(originalOpt.get(), finalOpt.get()))
                             }
                         }
-
-                        maxId--
                     }
-
-                    return Optional.of(blockTransactions)
                 }
+                return Optional.of(transactionBlocks.toList())
             }
 
-            return Optional.empty()
-        }
-*/
-
-        fun setItemStackTransactions (dataContainer: DataContainer, transactionList :List<Transaction<ItemStackSnapshot>>) : DataContainer {
-            for ((id, transaction) in transactionList.withIndex()){
-                dataContainer.set(DataQuery.of("ItemTransactions", id.toString()), transaction.toContainer())
-                dataContainer.set(DataQuery.of("ItemTransactions", "maxId"), id)
-            }
-            return dataContainer
-        }
-
-        fun containsItemStackTransactions (dataContainer: DataContainer) : Boolean {
-            return dataContainer.contains(DataQuery.of("ItemTransactions"))
-        }
-
-        fun getItemStackTransactions (dataContainer: DataContainer) : Optional<List<Transaction<ItemStackSnapshot>>> {
-            if (dataContainer.contains(DataQuery.of("ItemTransactions"))){
-                val maxIdOpt = dataContainer.getInt(DataQuery.of("ItemTransactions", "maxId"))
-                if (maxIdOpt.isPresent){
-                    var maxId = maxIdOpt.get()
-                    val itemTransactions: MutableList<Transaction<ItemStackSnapshot>> = mutableListOf()
-                    while (maxId >= 0){
-                        val dataView = dataContainer.getView(DataQuery.of("ItemTransactions", maxId.toString()))
-                        if (dataView.isPresent){
-                            val itemTransactionOpt = Sponge.getDataManager().deserialize(Transaction::class.java, dataView.get())
-                            if (itemTransactionOpt.isPresent){
-                                if (itemTransactionOpt.get().default is ItemStackSnapshot){
-                                    itemTransactions.add(itemTransactionOpt.get() as Transaction<ItemStackSnapshot>)
-                                }
-                            }
-                        }
-                        maxId--
-                    }
-                    return Optional.of(itemTransactions)
-                }
-            }
             return Optional.empty()
         }
     }

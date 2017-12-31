@@ -72,8 +72,8 @@ class TextRenderer() {
                     }
                 }
             }
-            if (DatacontainerHelper.containsItemStackTransactions(event.DataContainer)){
-                val itemStackTransactionsOpt = DatacontainerHelper.getItemStackTransactions(event.DataContainer)
+            if (DatacontainerHelper.containsItemStackSnapshotTransactions(event.DataContainer)){
+                val itemStackTransactionsOpt = DatacontainerHelper.getItemStackSnapshotTransactions(event.DataContainer)
                 if (itemStackTransactionsOpt.isPresent){
                     val itemStackTransactions = itemStackTransactionsOpt.get()
                     for (itemStackTransaction in itemStackTransactions){
