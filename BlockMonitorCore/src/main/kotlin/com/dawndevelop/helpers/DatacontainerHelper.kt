@@ -13,9 +13,14 @@ import java.util.*
 
 class DatacontainerHelper {
     companion object {
+
         fun setPlayer (dataContainer: DataContainer, player: Player) : DataContainer{
             dataContainer.set(DataQuery.of("Player"), player.toContainer())
             return dataContainer
+        }
+
+        fun containsPlayer(dataContainer: DataContainer) : Boolean {
+            return dataContainer.contains(DataQuery.of("Player"))
         }
 
         fun getPlayer (dataContainer: DataContainer) : Optional<Player> {
@@ -30,6 +35,10 @@ class DatacontainerHelper {
         fun setEntity (dataContainer: DataContainer, entity: Entity) : DataContainer{
             dataContainer.set(DataQuery.of("Entity"), entity.toContainer())
             return dataContainer
+        }
+
+        fun containsEntity(dataContainer: DataContainer) : Boolean {
+            return dataContainer.contains(DataQuery.of("Entity"))
         }
 
         fun getEntity (dataContainer: DataContainer) : Optional<Entity> {
@@ -47,6 +56,10 @@ class DatacontainerHelper {
                 dataContainer.set(DataQuery.of("BlockTransactions", "maxId"), id)
             }
             return dataContainer
+        }
+
+        fun containsBlockTransactions(dataContainer: DataContainer) : Boolean {
+            return dataContainer.contains(DataQuery.of("BlockTransactions"))
         }
 
         fun getBlockTransactions (dataContainer: DataContainer) : Optional<List<Transaction<BlockSnapshot>>> {
@@ -83,6 +96,10 @@ class DatacontainerHelper {
                 dataContainer.set(DataQuery.of("ItemTransactions", "maxId"), id)
             }
             return dataContainer
+        }
+
+        fun containsItemStackTransactions (dataContainer: DataContainer) : Boolean {
+            return dataContainer.contains(DataQuery.of("ItemTransactions"))
         }
 
         fun getItemStackTransactions (dataContainer: DataContainer) : Optional<List<Transaction<ItemStackSnapshot>>> {
