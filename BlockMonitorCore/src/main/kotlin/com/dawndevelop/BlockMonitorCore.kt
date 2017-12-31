@@ -2,6 +2,7 @@ package com.dawndevelop
 
 import com.dawndevelop.event.EventChangeBlock
 import com.dawndevelop.event.EventClientConnection
+import com.dawndevelop.event.TextRenderer
 import com.google.inject.Inject
 import org.slf4j.Logger
 import org.spongepowered.api.Game
@@ -37,6 +38,7 @@ class BlockMonitorCore {
         game.commandManager.register(this, CommandSpec.builder()
                 .description(Text.of("Deletes all records in the datastore indiscriminately"))
                 .executor { source, context ->
+
                     BlockMonitorApi.databaseHandler.DeleteAll()
                     CommandResult.empty()
                 }.build(), "bmdeleteall")
@@ -60,10 +62,25 @@ class BlockMonitorCore {
                                 "ID: ${result.ID} EventType: ${result.Type} Location: ${result.Location?.toString() ?: "Location not found!"}"
                         ))
                     }
-
                     CommandResult.success()
-
                 }.build(), "bmprintall")
+
+        game.commandManager.register(this, CommandSpec.builder()
+                .description(Text.of(""))
+                .arguments(GenericArguments.onlyOne(GenericArguments.integer(Text.of("radius"))))
+                .executor { source, context ->
+                    if (source is Player){
+                        val results = BlockMonitorApi.databaseHandler.SelectAllInRange(source.location ,context.getOne<Int>(Text.of("radius")).get())
+                        val texts: MutableList<Text> = mutableListOf()
+
+                        for (result in results){
+                            texts.add(TextRenderer.renderEvent(result))
+                        }
+
+                        PaginationList.builder().title(Text.of("Search results")).contents(texts).linesPerPage(20).build().sendTo(source)
+                    }
+                    CommandResult.empty()
+                }.build(), "bmsearchrange")
     }
 
     @Listener
@@ -108,7 +125,6 @@ class BlockMonitorCore {
                 var growEvent: ChangeBlockEvent.Grow = event
                 BlockMonitorApi.databaseHandler.Insert(EventChangeBlock.Grow(growEvent.transactions, growEvent.cause.first(Entity::class.java)))
             }
-
         }
     }
 }
