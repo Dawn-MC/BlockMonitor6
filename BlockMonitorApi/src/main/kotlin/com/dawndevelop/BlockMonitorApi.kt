@@ -46,7 +46,7 @@ public class BlockMonitorApi {
     @Listener
     fun PreInitEvent(event: GamePreInitializationEvent){
 
-        logger.info(this.javaClass.getAnnotation(Plugin::class.java).name + "has entered PreInit")
+        logger.info(this.javaClass.getAnnotation(Plugin::class.java).name + " has entered PreInit")
         //todo init the database handler
         var configNode = configManager.load()
 
@@ -71,6 +71,6 @@ public class BlockMonitorApi {
         BlockMonitorApi.Companion.staticLogger = logger
 
         logger.info("Debug mode is: " + if(configNode.getNode("debug", "enabled").getBoolean(false)){"Enabled"}else{"Disabled"})
-        logger.info(this.javaClass.getAnnotation(Plugin::class.java).name + "completed preinit successfully!")
+        logger.info(this.javaClass.getAnnotation(Plugin::class.java).name + " completed preinit successfully!")
     }
 }
