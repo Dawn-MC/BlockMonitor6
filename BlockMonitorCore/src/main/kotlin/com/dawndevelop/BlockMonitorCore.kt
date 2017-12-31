@@ -37,37 +37,40 @@ class BlockMonitorCore {
     fun PreInitEvent(event: GamePreInitializationEvent){
         game.commandManager.register(this, CommandSpec.builder()
                 .description(Text.of("Deletes all records in the datastore indiscriminately"))
+                .permission("blockmonitorcore.delete.all")
                 .executor { source, context ->
 
                     BlockMonitorApi.databaseHandler.DeleteAll()
-                    CommandResult.empty()
+                    CommandResult.success()
                 }.build(), "bmdeleteall")
 
         game.commandManager.register(this, CommandSpec.builder()
-                .description(Text.of(""))
+                .description(Text.of("Deletes the record based on the inputted ID"))
+                .permission("blockmonitorcore.delete.selected")
                 .arguments(GenericArguments.onlyOne(GenericArguments.longNum(Text.of("id"))))
                 .executor { source, context ->
                     BlockMonitorApi.databaseHandler.Delete(context.getOne<Long>(Text.of("id")).get())
-                    CommandResult.empty()
+                    CommandResult.success()
                 }.build(), "bmdelete")
 
         game.commandManager.register(this, CommandSpec.builder()
-                .description(Text.of(""))
+                .description(Text.of("Outputs all records in the datasource"))
+                .permission("blockmonitorcore.search.selectall")
                 .executor { source, context ->
                     source.sendMessage(Text.of("Searching"))
                     val selectedResults = BlockMonitorApi.databaseHandler.SelectAll()
-                    println("Selected results size = ${selectedResults.size}")
+                    val texts: MutableList<Text> = mutableListOf()
                     for (result in selectedResults){
-                        source.sendMessage(Text.of(
-                                "ID: ${result.ID} EventType: ${result.Type} Location: ${result.Location?.toString() ?: "Location not found!"}"
-                        ))
+                        texts.add(TextRenderer.renderEvent(result))
                     }
+                    PaginationList.builder().title(Text.of("Search results")).contents(texts).linesPerPage(20).build().sendTo(source)
                     CommandResult.success()
-                }.build(), "bmprintall")
+                }.build(), "bmselectall")
 
         game.commandManager.register(this, CommandSpec.builder()
-                .description(Text.of(""))
+                .description(Text.of("Searches in a all directions using the selected radius!"))
                 .arguments(GenericArguments.onlyOne(GenericArguments.integer(Text.of("radius"))))
+                .permission("blockmonitorcore.search.range")
                 .executor { source, context ->
                     if (source is Player){
                         val results = BlockMonitorApi.databaseHandler.SelectAllInRange(source.location ,context.getOne<Int>(Text.of("radius")).get())
