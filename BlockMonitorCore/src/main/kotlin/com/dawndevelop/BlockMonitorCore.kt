@@ -16,9 +16,10 @@ import org.spongepowered.api.event.game.state.GamePreInitializationEvent
 import org.spongepowered.api.event.network.ClientConnectionEvent
 import org.spongepowered.api.plugin.Dependency
 import org.spongepowered.api.plugin.Plugin
+import org.spongepowered.api.service.pagination.PaginationList
 import org.spongepowered.api.text.Text
 
-@Plugin(id = "blockmonitorcore", name = "Block Monitor Core", description = "Gives functionality to Block Monitors api", dependencies = arrayOf(Dependency(id = "blockmonitorapi", version = "1.0.0")))
+@Plugin(id = "blockmonitorcore", name = "Block Monitor Core", description = "Gives functionality to Block Monitors api", dependencies = [Dependency(id = "blockmonitorapi", version = "1.0.0"), Dependency(id = "kotlincore", version = "1.2.10")])
 class BlockMonitorCore {
 
     @Inject

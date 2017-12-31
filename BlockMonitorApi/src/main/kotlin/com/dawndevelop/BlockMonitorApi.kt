@@ -12,11 +12,12 @@ import ninja.leaping.configurate.loader.ConfigurationLoader
 import org.jetbrains.exposed.sql.exposedLogger
 import org.spongepowered.api.config.DefaultConfig
 import org.spongepowered.api.config.ConfigDir
+import org.spongepowered.api.plugin.Dependency
 import java.io.File
 import java.nio.file.Path
 
 
-@Plugin(id = "blockmonitorapi", name = "Block Monitor API", description = "A plugin which allows for the monitoring and recording of events in game", version = "1.0.0")
+@Plugin(id = "blockmonitorapi", name = "Block Monitor API", description = "A plugin which allows for the monitoring and recording of events in game", version = "1.0.0", dependencies = [Dependency(id = "kotlincore", version = "1.2.10")])
 public class BlockMonitorApi {
 
     @Inject lateinit var game: Game
