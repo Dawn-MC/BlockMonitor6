@@ -4,12 +4,13 @@ import com.dawndevelop.event.DatabaseEvent
 import com.dawndevelop.event.DatabaseEvent.locationX
 import com.dawndevelop.event.DatabaseEvent.locationY
 import com.dawndevelop.event.DatabaseEvent.locationZ
-import com.dawndevelop.event.DatabaseEvent.long
 import com.dawndevelop.event.DatabaseEvent.worldId
 import com.dawndevelop.event.Event
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SchemaUtils.create
-import org.jetbrains.exposed.sql.transactions.TransactionManager
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.lessEq
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import org.spongepowered.api.Sponge
@@ -121,8 +122,22 @@ public class DatabaseHandler (url: String, driver: String) {
         }
     }
 
+    fun SelectAllInRange(centerLocation: Location<World>, radius: Int): List<Event> {
+        val startX: Int = centerLocation.blockX - radius
+        val endX: Int = centerLocation.blockX + radius
 
-    fun SelectAllInArea(centerLocation: Location<World>, radiusX: Int, radiusY: Int, radiusZ: Int) : ResultSet?{
+        val startY: Int = centerLocation.blockY - radius
+        val endY: Int = centerLocation.blockY + radius
+
+        val startZ: Int = centerLocation.blockZ - radius
+        val endZ: Int = centerLocation.blockZ + radius
+
+        Database.connect(url, driver)
+
+        return SelectInArea(startX, endX, startY, endY, startZ, endZ, centerLocation.extent.uniqueId.toString())
+    }
+
+    fun SelectAllInArea(centerLocation: Location<World>, radiusX: Int, radiusY: Int, radiusZ: Int) : List<Event> {
 
         val startX: Int = centerLocation.blockX - radiusX
         val endX: Int = centerLocation.blockX + radiusX
@@ -135,23 +150,46 @@ public class DatabaseHandler (url: String, driver: String) {
 
         Database.connect(url, driver)
 
-        return transaction {
+
+        return SelectInArea(startX, endX, startY, endY, startZ, endZ, centerLocation.extent.uniqueId.toString())
+
+    }
+
+    fun SelectInArea(startX: Int, endX: Int, startY: Int, endY: Int, startZ: Int, endZ: Int, worldID: String) : List<Event> {
+        Database.connect(url, driver)
+
+        val events: MutableList<Event> = mutableListOf()
+        transaction {
             if (BlockMonitorApi.debugMode){
                 logger.addLogger(StdOutSqlLogger)
             }
-            SelectInArea(startX, endX, startY, endY, startZ, endZ, centerLocation.extent.uniqueId.timestamp())
-        }
-    }
 
-    fun SelectInArea(startX: Int, endX: Int, startY: Int, endY: Int, startZ: Int, endZ: Int, worldID: Long) : ResultSet? {
-        Database.connect(url, driver)
-
-        return DatabaseEvent.select{
-            ((locationX greaterEq startX) and (locationX lessEq endX)) and
+            for(dbEvent in DatabaseEvent.select(
+                    ((locationX greaterEq startX) and (locationX lessEq endX)) and
                     ((locationY greaterEq startY) and (locationY lessEq endY)) and
                     ((locationZ greaterEq startZ) and (locationZ lessEq endZ)) and
-                    (worldId eq worldID)
-            }.execute(TransactionManager.currentOrNew(1))
+                    (worldId eq worldID))) {
+                val event: Event = Event()
+                println("event found id: ${dbEvent[DatabaseEvent.id]}")
+                event.ID = dbEvent[DatabaseEvent.id]
+                event.Type = dbEvent[DatabaseEvent.type]
+                event.Date = ToJavaDate(dbEvent[DatabaseEvent.date])
+                event.DataContainer = DataFormats.JSON.read(dbEvent[DatabaseEvent.dataContainer])
+                if(dbEvent[DatabaseEvent.worldId] != "null"){
+                    BlockMonitorApi.staticLogger?.debug(dbEvent[DatabaseEvent.worldId])
+                    if (Sponge.getServer().getWorld(UUID.fromString(dbEvent[DatabaseEvent.worldId])).isPresent)
+                        event.Location = Location<World>(Sponge.getServer().getWorld(UUID.fromString(dbEvent[DatabaseEvent.worldId])).get(), dbEvent[DatabaseEvent.locationX], dbEvent[DatabaseEvent.locationY], dbEvent[DatabaseEvent.locationZ])
+                    else
+                        event.Location = null
+                }
+                else
+                    event.Location = null
+
+                events.add(event)
+
+            }
+        }
+        return events.toList()
     }
 
     public fun SelectAll(): List<Event> {
