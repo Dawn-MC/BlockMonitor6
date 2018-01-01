@@ -104,11 +104,18 @@ class BlockMonitorCore {
 
     @Listener
     fun breakBlockEvent(event: ChangeBlockEvent){
+        for(cause in event.cause.all()){
+            println(cause)
+        }
         val eventt: Eventt = Eventt(event.cause, event, listOf(event.transactions))
     }
 
     @Listener
     fun dropEvent(event: DropItemEvent){
-
+        when(event){
+            is DropItemEvent.Dispense -> {}
+            is DropItemEvent.Destruct -> {}
+            is DropItemEvent.Custom -> {}
+        }
     }
 }

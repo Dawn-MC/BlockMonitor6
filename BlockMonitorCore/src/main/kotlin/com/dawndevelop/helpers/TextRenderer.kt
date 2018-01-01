@@ -12,7 +12,7 @@ import org.spongepowered.api.world.World
 class TextRenderer() {
 
     companion object {
-        public val idTemplate: TextTemplate = of(TextColors.BLACK, "Event ID: ", TextColors.RED, arg("eventId"))
+        public val idTemplate: TextTemplate = of(Text.of(TextColors.BLACK, "Event ID: "), Text.of(TextColors.RED, arg("eventId")))
 
         public val eventTypeTemplate: TextTemplate = of(TextColors.BLACK, "Event type: ", TextColors.RED, arg("eventType"))
 
@@ -24,7 +24,7 @@ class TextRenderer() {
                 arg("playerName"), TextColors.BLACK, " UUID: ", TextColors.RED, arg("playerUuid"))
         public val entityTemplate: TextTemplate = of(TextColors.BLACK,  "Entity type: ", TextColors.RED,
                 arg("entityType"))
-        public val blockSnapshotTemplate: TextTemplate = of("not implemented yet")
+        public val blockSnapshotTemplate: TextTemplate = of("Block Type: " + arg("blockType"))
         public val itemSnapshotTemplate: TextTemplate = of("not implemented yet")
 
         public val transactionTemplate: TextTemplate = of(TextColors.BLACK, "Original: ", TextColors.RED ,
@@ -70,11 +70,11 @@ class TextRenderer() {
             if (DatacontainerHelper.containsBlockTransactions(event.DataContainer)){
                 val blockTransactionsOpt = DatacontainerHelper.getBlockTransactions(event.DataContainer)
                 if (blockTransactionsOpt.isPresent){
-                    BlockMonitorCore.staticLogger.info("blocktransactions found")
+                    //BlockMonitorCore.staticLogger.info("blocktransactions found")
                     val blockTransactions = blockTransactionsOpt.get()
                     for (blockTransaction in blockTransactions){
-                        BlockMonitorCore.staticLogger.info("blocktransaction found!: 1")
-                        textBuilder.append(transactionTemplate.apply(mapOf(Pair("originalTransaction", blockSnapshotTemplate.apply().build()), Pair("finalTransaction", blockSnapshotTemplate.apply().build())) ).build())
+                        //BlockMonitorCore.staticLogger.info("blocktransaction found!: 1")
+                        textBuilder.append(transactionTemplate.apply(mapOf(Pair("originalTransaction", blockSnapshotTemplate.apply(mapOf(Pair("blockType", blockTransaction.original.extendedState.name))).build()), Pair("finalTransaction", blockSnapshotTemplate.apply(mapOf(Pair("blockType", blockTransaction.original.extendedState.type.name))).build())) ).build())
                         textBuilder.append(Text.NEW_LINE)
                     }
                 }
